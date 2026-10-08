@@ -155,9 +155,12 @@ curl -X POST localhost:8000/recommend -H 'Content-Type: application/json' \
 | 文档 | 内容 |
 | --- | --- |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | **先看这个**：11 个月五阶段计划、每周任务、验收标准 |
+| [docs/SCHEDULE.md](docs/SCHEDULE.md) | 40 周执行日历、关键日期、缓冲期安排 |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 分层架构、模块接口契约、关键设计决策 |
 | [docs/REVIEW.md](docs/REVIEW.md) | 代码评审流程、Definition of Done、协作约定 |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | 技术选型记录及理由 |
+| [docs/RESUME.md](docs/RESUME.md) | 简历条目模板、讲稿框架、高频追问清单 |
+| [docs/PUSH.md](docs/PUSH.md) | 推送到 GitHub 的操作手册与排障 |
 
 ---
 
