@@ -128,12 +128,18 @@ rec-agent-lab/
 ## 快速开始
 
 ```bash
-# 环境（详见 docs/ROADMAP.md 阶段 0）
-conda env create -f environment.yml
-conda activate recagent
+# 1) 环境（二选一，详见 environment.yml 文件头）
+#    A. 复用已有 CUDA 环境，省去 2GB 的 torch 下载
+conda activate llm-lab && pip install -e ".[dev]"
+#    B. 新建独立环境（torch 需按 environment.yml 说明单独装）
+conda env create -f environment.yml && conda activate recagent
 
-# 数据准备
-python scripts/download_data.py --dataset ml-1m
+# 2) 环境自检：逐项确认依赖、CUDA、数据是否就绪
+python scripts/env_check.py
+
+# 3) 数据准备
+#    若本地已有 ML-1M，用 --local-source 跳过下载
+python scripts/download_data.py --dataset ml-1m --local-source <你已有的 ml-1m 目录>
 python scripts/preprocess.py --config configs/data/ml1m.yaml
 
 # 训练基线
