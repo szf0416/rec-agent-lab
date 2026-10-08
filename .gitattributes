@@ -1,0 +1,23 @@
+# 统一换行符，避免 Windows/Linux 协作时整个文件显示为改动
+* text=auto eol=lf
+
+# 二进制文件不参与换行转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pt binary
+*.pth binary
+*.ckpt binary
+*.safetensors binary
+*.bin binary
+*.onnx binary
+*.gguf binary
+*.zip binary
+*.gz binary
+*.parquet binary
+*.npz binary
+
+# 语言统计时排除 notebooks
+*.ipynb linguist-vendored
