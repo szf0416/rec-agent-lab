@@ -219,17 +219,25 @@ def load_ml1m(
 
     movies: dict[int, Movie] = {}
     users: dict[int, User] = {}
-    for name, parser, target in (
-        ("movies.dat", parse_movies, movies),
-        ("users.dat", parse_users, users),
-    ):
-        path = raw_dir / name
-        if path.is_file():
-            target.update(parser(path))
-        elif require_metadata:
-            raise IntegrityError(f"require_metadata=True 但缺少 {name}（{raw_dir}）")
-        else:
-            logger.warning("缺少 %s，相关特征将不可用", name)
+
+    # 不用 (name, parser, target) 元组循环：那样 target 会是
+    # dict[int, Movie] | dict[int, User] 的联合类型，类型检查无法通过，
+    # 也会掩盖"往同一个 dict 里塞两种值"这类真正的逻辑错误。
+    movies_path = raw_dir / "movies.dat"
+    if movies_path.is_file():
+        movies = parse_movies(movies_path)
+    elif require_metadata:
+        raise IntegrityError(f"require_metadata=True 但缺少 movies.dat（{raw_dir}）")
+    else:
+        logger.warning("缺少 movies.dat，物品侧特征将不可用")
+
+    users_path = raw_dir / "users.dat"
+    if users_path.is_file():
+        users = parse_users(users_path)
+    elif require_metadata:
+        raise IntegrityError(f"require_metadata=True 但缺少 users.dat（{raw_dir}）")
+    else:
+        logger.warning("缺少 users.dat，用户侧特征将不可用")
 
     dataset = MovieLens1M(
         ratings=tuple(ratings), movies=movies, users=users, raw_dir=raw_dir

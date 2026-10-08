@@ -39,7 +39,6 @@ jobs:
 
       - name: Type check (mypy)
         run: mypy recagent
-        continue-on-error: true   # 前期不阻塞, S2 之后改为强制
 
       - name: Test (pytest)
         run: pytest -q --cov=recagent --cov-report=term-missing

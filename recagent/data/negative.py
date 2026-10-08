@@ -118,7 +118,9 @@ class NegativeSampler:
         )
         # 次线性缩放：直接用原始频次会让头部物品主导采样，模型学不到长尾区分能力
         weights = np.power(raw, 0.75)
-        return weights / weights.sum()
+        # 显式标注：numpy 的除法返回 Any，不加注解会触发 no-any-return
+        normalized: np.ndarray = weights / weights.sum()
+        return normalized
 
     def _draw(self, size: int, exclude: set[int] | None) -> list[int]:
         """从池中无放回抽 size 个，可排除若干物品。"""

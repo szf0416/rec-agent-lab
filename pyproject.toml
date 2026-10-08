@@ -74,7 +74,9 @@ include = ["recagent*"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-extend-exclude = ["notebooks", "from_scratch"]
+# .tools 是沙箱内 pip --target 装的本地工具，不是项目代码；
+# data/ 是数据产物目录，都不参与 lint。
+extend-exclude = ["notebooks", "from_scratch", ".tools", "data"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF", "BLE"]
@@ -97,7 +99,11 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
-exclude = ["from_scratch/", "notebooks/"]
+# 本项目只对库代码做严格类型检查。
+# tests/ 里的测试函数大量返回 None 且使用 fixture，逐一声明收益低；
+# 需要类型保障的地方是 recagent/ 这个会被反复复用的包。
+files = ["recagent"]
+exclude = ["from_scratch/", "notebooks/", "scripts/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
