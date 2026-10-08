@@ -77,11 +77,19 @@ target-version = "py310"
 extend-exclude = ["notebooks", "from_scratch"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
-ignore = ["E501"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF", "BLE"]
+ignore = [
+    "E501",     # 行长由 formatter 负责，硬拆中文行反而更难读
+    # RUF001/002/003 禁止「有歧义的 Unicode 字符」，而中文全角标点（，：（））
+    # 正好被判为歧义。本项目文档与注释一律中文，这三条必然误报，故关闭。
+    "RUF001",   # 字符串中的歧义字符
+    "RUF002",   # docstring 中的歧义字符
+    "RUF003",   # 注释中的歧义字符
+]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+"from_scratch/*" = ["E402", "F401"]   # 教学代码允许渐进式演示
 
 [tool.mypy]
 python_version = "3.10"

@@ -158,6 +158,7 @@ curl -X POST localhost:8000/recommend -H 'Content-Type: application/json' \
 | [docs/SCHEDULE.md](docs/SCHEDULE.md) | 40 周执行日历、关键日期、缓冲期安排 |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 分层架构、模块接口契约、关键设计决策 |
 | [docs/REVIEW.md](docs/REVIEW.md) | 代码评审流程、Definition of Done、协作约定 |
+| [docs/DATA-PIPELINE.md](docs/DATA-PIPELINE.md) | **数据管线导读**：切分与负采样为什么这么设计、防泄漏在哪 |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | 技术选型记录及理由 |
 | [docs/RESUME.md](docs/RESUME.md) | 简历条目模板、讲稿框架、高频追问清单 |
 | [docs/PUSH.md](docs/PUSH.md) | 推送到 GitHub 的操作手册与排障 |

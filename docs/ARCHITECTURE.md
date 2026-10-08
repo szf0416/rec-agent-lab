@@ -44,21 +44,28 @@ class Interaction:
     timestamp: int
     rating: float | None = None
 
+
 class DatasetSplit(NamedTuple):
     train: list[Interaction]
     valid: list[Interaction]
     test: list[Interaction]
 
+
 class Splitter(Protocol):
     """时间切分 / leave-one-out 切分都实现这个协议。"""
+
     def split(self, interactions: list[Interaction]) -> DatasetSplit: ...
+
 
 class RecDataset(torch.utils.data.Dataset):
     """统一的 Dataset。由 DatasetBuilder 产出。"""
+
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor]: ...
+
 
 class DatasetBuilder(Protocol):
     """不同数据集（ML-1M / Amazon）实现这个协议。"""
+
     def build(self, config: DataConfig) -> tuple[RecDataset, RecDataset, RecDataset]: ...
     @property
     def num_users(self) -> int: ...
@@ -121,19 +128,24 @@ class RecommendRequest:
     user_id: int
     top_k: int = 10
     exclude_seen: bool = True
-    context: dict[str, Any] | None = None   # Agent 传来的额外约束
+    context: dict[str, Any] | None = None  # Agent 传来的额外约束
+
 
 @dataclass
 class RecommendedItem:
     item_id: int
     score: float
-    source: str                 # 哪一路召回的，用于分析和解释
+    source: str  # 哪一路召回的，用于分析和解释
     explanation: str | None = None
+
 
 class RecallChannel(Protocol):
     """每个召回通道实现这个协议，引擎统一调度。"""
+
     name: str
+
     def recall(self, request: RecommendRequest, size: int) -> list[RecommendedItem]: ...
+
 
 class RecommendationEngine:
     """编排：多路召回 → 去重 → 粗排 → 精排 → 重排。
@@ -143,6 +155,7 @@ class RecommendationEngine:
     - 记录每个候选来自哪一路，供消融和可解释性使用
     - 全流程可注入耗时埋点
     """
+
     def __init__(
         self,
         channels: list[RecallChannel],
@@ -164,22 +177,26 @@ Agent 要能说"我推荐这个是因为它来自序列召回"，消融实验也
 @dataclass
 class LLMResponse:
     text: str
-    parsed: dict[str, Any] | None    # 结构化解出的 JSON
-    usage: dict[str, int]            # token 统计
+    parsed: dict[str, Any] | None  # 结构化解出的 JSON
+    usage: dict[str, int]  # token 统计
     latency_ms: float
+
 
 class BaseLLM(Protocol):
     def generate(
         self,
         messages: list[dict[str, str]],
         *,
-        schema: dict | None = None,      # 传入则强制结构化输出
+        schema: dict | None = None,  # 传入则强制结构化输出
         max_tokens: int = 512,
         temperature: float = 0.7,
     ) -> LLMResponse: ...
 
+
 class LocalLLM(BaseLLM):
     """transformers / llama.cpp 后端"""
+
+
 class RemoteLLM(BaseLLM):
     """vLLM / OpenAI 兼容 API 后端"""
 ```
@@ -195,15 +212,17 @@ class RemoteLLM(BaseLLM):
 class ToolSpec:
     name: str
     description: str
-    parameters: dict          # JSON Schema
+    parameters: dict  # JSON Schema
     func: Callable[..., Any]
     timeout_s: float = 5.0
+
 
 class ToolRegistry:
     def register(self, spec: ToolSpec) -> None: ...
     def to_openai_schema(self) -> list[dict]: ...
     def call(self, name: str, args: dict) -> ToolResult: ...
     def unregister(self, name: str) -> None: ...
+
 
 @dataclass
 class ToolResult:
@@ -223,12 +242,14 @@ class AgentStep:
     observation: str | None
     elapsed_ms: float
 
+
 @dataclass
 class AgentResult:
     answer: str
     steps: list[AgentStep]
     recommendations: list[RecommendedItem]
-    terminated_reason: str        # "final_answer" | "max_steps" | "timeout" | "error"
+    terminated_reason: str  # "final_answer" | "max_steps" | "timeout" | "error"
+
 
 class ReActAgent:
     """自研 ReAct 循环。
@@ -239,6 +260,7 @@ class ReActAgent:
     - 连续 N 次工具调用失败则降级到直接回答
     - 工具调用去重：同参数重复调用直接返回缓存
     """
+
     def __init__(
         self,
         llm: BaseLLM,
@@ -258,6 +280,7 @@ class Memory(Protocol):
     def get_context(self, max_tokens: int) -> list[dict[str, str]]: ...
     def get_user_profile(self, user_id: int) -> dict[str, Any]: ...
     def update_profile(self, user_id: int, facts: dict[str, Any]) -> None: ...
+
 
 class HybridMemory(Memory):
     """短期：滑动窗口对话

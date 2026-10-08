@@ -1,0 +1,50 @@
+# @package data
+# MovieLens-1M 数据配置
+# 用法: python scripts/preprocess.py --config configs/data/ml1m.yaml
+
+name: ml1m
+raw_dir: data/raw/ml-1m
+processed_dir: data/processed/ml1m
+
+# 下载与校验规格的唯一真相在 recagent/data/download.py 的 ML1M_SPEC，
+# 不在这里重复维护——两处写校验值迟早会不一致。
+source:
+  url: https://files.grouplens.org/datasets/movielens/ml-1m.zip
+  # 若本地已有数据（如 LightGCN/raw_data/ml-1m），填这里可跳过下载：
+  local_source: null
+  # local_source: C:/Users/shizifan/Desktop/code/LightGCN/raw_data/ml-1m
+
+# --- 过滤 ---
+filter:
+  min_user_interactions: 5    # 交互少于 5 条的用户丢弃（冷启动用户单独留出做实验）
+  min_item_interactions: 5    # 长尾物品丢弃，但保留清单用于长尾分析
+  min_rating: null            # null = 不按评分过滤，全部作为隐式反馈
+
+# --- 切分 ---
+split:
+  strategy: temporal          # temporal | leave_one_out  (见 ADR-003)
+  train_ratio: 0.8
+  valid_ratio: 0.1
+  # test_ratio = 1 - train - valid
+  # 同一时间戳的交互必须整体归入同一切分，不允许跨界（评审重点）
+
+# --- 序列构造 ---
+sequence:
+  max_len: 50                 # 用户行为序列最大长度，超出取最近 50 条
+  min_len: 5                  # 短于 5 条不参与序列建模
+
+# --- 负采样 ---
+negative_sampling:
+  train_ratio: 4              # 训练时每正样本配 4 个负样本
+  eval_num_neg: 100           # 评测时每个用户配 100 个负样本（标准协议）
+  strategy: popularity_aware  # uniform | popularity_aware
+  # 硬约束：负样本必须从"切分点之前已存在且该用户未交互"的物品中采样
+
+# --- 用户特征（供 LLM 生成画像） ---
+user_features:
+  include_gender: true
+  include_age: true
+  include_occupation: true
+  age_buckets: [1, 18, 25, 35, 45, 50, 56]
+
+seed: 42

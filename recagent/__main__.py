@@ -7,7 +7,8 @@ S0 只提供骨架，真正的子命令在后续阶段按需接入：
     S5: recagent serve
     S6: recagent agent "<query>"
 
-设计约定：__main__ 只负责参数解析与分发，业务逻辑一律放在 recagent 各子包里。
+设计约定：__main__ 只做参数解析与分发，
+业务逻辑一律放在 recagent 各子包里。
 """
 
 from __future__ import annotations

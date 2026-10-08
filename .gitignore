@@ -20,8 +20,10 @@ htmlcov/
 .ipynb_checkpoints/
 
 # --- 数据：绝不要提交数据集 ---
-data/
-!data/.gitkeep
+# 注意：必须用前导斜杠锚定到仓库根目录。
+# 写 "data/" 会匹配任意层级的同名目录，把 recagent/data/ 这个代码包也一起忽略掉。
+/data/
+!/data/.gitkeep
 *.csv
 *.tsv
 *.zip
@@ -67,3 +69,6 @@ Thumbs.db
 # --- 日志 ---
 logs/
 *.log
+
+# --- 本地工具（沙箱内 pip --target 安装的可执行文件，不入库）---
+.tools/
