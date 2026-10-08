@@ -174,6 +174,8 @@ curl -X POST localhost:8000/recommend -H 'Content-Type: application/json' \
 | S6 | 推荐 Agent | ⬜ |
 | S7 | 消融、报告、简历包装 | ⬜ |
 
+> S0 已完成骨架搭建与首次提交，等你按 `docs/ROADMAP.md` 逐项验收。
+
 ## License
 
 MIT
