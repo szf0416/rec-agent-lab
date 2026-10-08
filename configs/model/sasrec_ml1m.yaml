@@ -1,0 +1,45 @@
+# @package model
+# SASRec 序列召回 - ML-1M
+# 用法: python scripts/train.py --config configs/model/sasrec_ml1m.yaml
+
+name: sasrec
+task: recall
+
+data:
+  config: configs/data/ml1m.yaml
+
+model:
+  hidden_dim: 64          # 6GB 显存下的稳妥选择；显存够可试 128
+  num_layers: 2
+  num_heads: 2
+  dropout: 0.2
+  max_seq_len: 50
+  share_item_embedding: true   # 输入输出 embedding 共享，减少参数量防过拟合
+
+train:
+  batch_size: 128
+  epochs: 200
+  lr: 0.001
+  weight_decay: 0.0
+  optimizer: adam
+  scheduler: none          # none | cosine | warmup_cosine
+  warmup_steps: 0
+  grad_clip: 5.0
+  early_stop_patience: 20
+  eval_every_n_epochs: 5
+  num_workers: 0           # Windows 下 >0 容易出问题，先设 0
+  amp: false               # 6GB 显存下先不用混合精度，稳定优先
+
+eval:
+  metrics: [recall, ndcg, hr, mrr]
+  top_k: [5, 10, 20]
+  num_neg: 100
+  exclude_seen: true
+
+runtime:
+  device: cuda
+  seed: 42
+  output_dir: outputs/sasrec_ml1m
+  save_top_k: 1
+  monitor: ndcg@10
+  mode: max

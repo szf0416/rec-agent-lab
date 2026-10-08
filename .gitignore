@@ -1,0 +1,69 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.python-version
+
+# --- 测试与缓存 ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.ipynb_checkpoints/
+
+# --- 数据：绝不要提交数据集 ---
+data/
+!data/.gitkeep
+*.csv
+*.tsv
+*.zip
+*.gz
+*.parquet
+*.h5
+*.npz
+*.pkl
+
+# --- 模型权重与产物：绝不要提交 ---
+checkpoints/
+outputs/
+runs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+*.gguf
+models/
+
+# --- 实验追踪 ---
+mlruns/
+wandb/
+lightning_logs/
+
+# --- 密钥与本地配置 ---
+.env
+.env.*
+!.env.example
+secrets/
+*.local.yaml
+configs/local/
+
+# --- 编辑器与系统 ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- 日志 ---
+logs/
+*.log

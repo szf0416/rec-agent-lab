@@ -1,0 +1,56 @@
+# @package agent
+# 推荐 Agent 配置（S6 使用）
+# 用法: python scripts/run_agent.py --config configs/agent/react.yaml
+
+name: react
+
+llm:
+  backend: local              # local | remote
+  model_name: Qwen/Qwen2.5-1.5B-Instruct   # TODO(S4): 填入微调后的实际 checkpoint
+  adapter_path: null          # LoRA 权重路径
+  quantization: 4bit          # null | 8bit | 4bit
+  max_tokens: 512
+  temperature: 0.3            # Agent 场景要低温度，保证稳定
+  # remote 后端配置（S5 之后）
+  base_url: null
+  api_key_env: RECAGENT_LLM_API_KEY
+
+loop:
+  max_steps: 8                # 硬上限，防死循环
+  total_timeout_s: 60.0
+  per_step_timeout_s: 15.0
+  max_consecutive_tool_errors: 2   # 连续失败达此值则降级为直接回答
+  dedup_tool_calls: true      # 同参数重复调用直接返回缓存
+
+tools:
+  enabled:
+    - search_item
+    - get_user_profile
+    - recall_by_vector
+    - rank_candidates
+    - explain_item
+    - clarify_preference
+  search_item:
+    top_k: 20
+  recall_by_vector:
+    channels: [popular, itemcf, two_tower, sasrec]
+    per_channel_size: 50
+    fusion: rrf               # rrf | weighted
+  rank_candidates:
+    model: din
+    top_k: 10
+  clarify_preference:
+    max_rounds: 2             # 最多主动澄清 2 轮
+
+memory:
+  short_term_turns: 10        # 滑动窗口保留最近 10 轮
+  long_term_enabled: true
+  max_profile_facts: 50       # 长期记忆容量上限，超出按重要性淘汰
+  profile_update: incremental # incremental | rewrite
+
+eval:
+  judge_model: Qwen/Qwen2.5-7B-Instruct
+  metrics: [tool_call_accuracy, task_success_rate, multi_turn_completion, ndcg_at_10]
+  trace_backend: langfuse     # langfuse | local
+
+seed: 42
