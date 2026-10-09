@@ -78,7 +78,11 @@ line-length = 100
 target-version = "py310"
 # .tools 是沙箱内 pip --target 装的本地工具，不是项目代码；
 # data/ 是数据产物目录，都不参与 lint。
-extend-exclude = ["notebooks", "from_scratch", ".tools", "data"]
+#
+# *.md 也必须排除：ruff 会去格式化 Markdown 里嵌的 Python 代码块，
+# 而那些示例是为了讲解（注释对齐、刻意展示错误写法），
+# 不是可执行代码，被 formatter 重排会破坏表达意图。
+extend-exclude = ["notebooks", "from_scratch", ".tools", "data", "*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF", "BLE"]
