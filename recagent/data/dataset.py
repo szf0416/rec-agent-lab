@@ -100,6 +100,7 @@ class SequenceRecallDataset(Dataset[dict[str, torch.Tensor]]):
         seed: int = 42,
         min_prefix: int = 3,
         mode: str = "train",
+        fixed_negatives: bool = False,
     ) -> None:
         if mode not in {"train", "eval"}:
             raise ValueError(f"mode 必须是 train/eval，收到 {mode!r}")
@@ -110,6 +111,7 @@ class SequenceRecallDataset(Dataset[dict[str, torch.Tensor]]):
         self.num_neg = num_neg
         self.min_prefix = min_prefix
         self.seed = seed
+        self.fixed_negatives = fixed_negatives
         self._rng = np.random.default_rng(seed)
 
         if mode == "train":
@@ -148,9 +150,55 @@ class SequenceRecallDataset(Dataset[dict[str, torch.Tensor]]):
 
         self._prefixes = prefixes
         self._labels = np.asarray(labels, dtype=np.int64)
-        logger.info(
-            "训练样本 %s 对（来自 %s 个用户序列）", len(prefixes), len(sequences)
-        )
+        logger.info("训练样本 %s 对（来自 %s 个用户序列）", len(prefixes), len(sequences))
+
+        if self.fixed_negatives:
+            computed = self._precompute_train_negatives()
+            self._fixed_train_negatives: list[list[int]] | None = computed
+            logger.info(
+                "训练负样本已固定（每样本 %s 个，共 %s 行）",
+                self.num_neg,
+                len(computed),
+            )
+        else:
+            # 显式声明类型：属性既可被赋成 list 也可为 None，
+            # 不标注的话第一次赋值会让类型检查器固定成 list，后面赋 None 就报错。
+            self._fixed_train_negatives = None
+
+    def _precompute_train_negatives(self) -> list[list[int]]:
+        """一次性为所有训练样本采样负样本并固定下来。
+
+        ## 为什么必须固定（这是一个真实踩过的坑）
+
+        若训练时每个 epoch 动态重采样负样本，模型会不断适应"新的随机负样本分布"，
+        而评测用的是**固定的**那批候选。结果就是：
+
+            train_loss 持续下降，valid_ndcg 却同步下降
+
+        这不是过拟合，而是**训练目标与评测目标不一致**造成的假象 ——
+        评测信号失去意义，无法用来比较不同正则化手段。
+
+        固定之后训练目标与评测协议一致，评测信号才可信。
+
+        ## 代价
+
+        固定负样本会降低正则效果（等价于每个样本只见过同一批负样本），
+        可能让过拟合更明显。但这个"代价"对本实验反而是好事：
+        我们需要明显的过拟合来对照正则化手段。
+        """
+        negatives: list[list[int]] = []
+        for label in self._labels:
+            label_int = int(label)
+            picked: list[int] = []
+            attempts = 0
+            limit = self.num_neg * 10
+            while len(picked) < self.num_neg and attempts < limit:
+                candidate = int(self._rng.choice(self.negative_pool))
+                attempts += 1
+                if candidate != label_int and candidate not in picked:
+                    picked.append(candidate)
+            negatives.append(picked)
+        return negatives
 
     def _build_eval_samples(
         self,
@@ -254,14 +302,21 @@ class SequenceRecallDataset(Dataset[dict[str, torch.Tensor]]):
 
         padded, length = self._pack_sequence(prefix)
 
-        # 动态负采样：排除标签本身，避免把正样本当负样本
-        negatives: list[int] = []
-        attempts = 0
-        while len(negatives) < self.num_neg and attempts < self.num_neg * 10:
-            candidate = int(self._rng.choice(self.negative_pool))
-            attempts += 1
-            if candidate != label and candidate not in negatives:
-                negatives.append(candidate)
+        if self._fixed_train_negatives is not None:
+            # 固定负样本模式：用预采样好的那批，保证每个 epoch 看到的候选集完全相同。
+            # 这让训练目标与"固定候选集"的评测协议一致，评测信号才有意义。
+            negatives = self._fixed_train_negatives[index]
+        else:
+            # 动态负采样：排除标签本身，避免把正样本当负样本。
+            # 注意这种模式会让训练分布每轮变化，适合"想扩大有效样本量"的场景，
+            # 但不适合用来对比不同正则化手段（评测信号会被分布漂移污染）。
+            negatives = []
+            attempts = 0
+            while len(negatives) < self.num_neg and attempts < self.num_neg * 10:
+                candidate = int(self._rng.choice(self.negative_pool))
+                attempts += 1
+                if candidate != label and candidate not in negatives:
+                    negatives.append(candidate)
 
         candidates = np.asarray([label, *negatives], dtype=np.int64)
         labels = np.zeros(len(candidates), dtype=np.float32)
