@@ -34,9 +34,15 @@ htmlcov/
 *.pkl
 
 # --- 模型权重与产物：绝不要提交 ---
-checkpoints/
-outputs/
-runs/
+# 全部用前导斜杠锚定到仓库根目录。
+# 不加斜杠时 "models/" 会匹配任意层级的同名目录，把 recagent/models/ 这个
+# **代码包**也一起忽略掉，导致模型代码永远进不了仓库。
+# 同理适用于 checkpoints / outputs / runs：它们既可能是产物目录，
+# 也可能（将来）成为包内子目录，锚定根目录最安全。
+/checkpoints/
+/outputs/
+/runs/
+/models/
 *.pt
 *.pth
 *.ckpt
@@ -44,7 +50,6 @@ runs/
 *.bin
 *.onnx
 *.gguf
-models/
 
 # --- 实验追踪 ---
 mlruns/
