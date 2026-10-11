@@ -102,10 +102,19 @@ epoch 5: train_loss=0.5118  valid ndcg=0.1349
 
 train_loss 持续下降但 valid ndcg 持续下降——**典型的过拟合**。
 
-这说明三件事都工作正常：
+这说明两件事工作正常：
 1. 验证集指标能反映泛化能力（不是跟着训练集一起变好）
-2. `EarlyStopping(monitor="ndcg@10", mode="max")` 正确地把它识别为"不提升"
-3. `restore_best=True` 让最终模型停在 epoch 2（0.1388），而不是 epoch 5（0.1349）
+2. `Monitor` 与 `mode="max"` 的配置能正确识别"哪一轮最优"（best_epoch=2）
+
+**但这次运行并没有触发早停**，需要诚实说明：
+
+- 只跑了 6 轮，`patience=5`；从最优轮（epoch 2）到结束只有 4 轮退步，未达到 patience
+- 所以训练是**跑满 epochs 自然结束**的，`stopped_early=False`
+- 早停的触发逻辑由单元测试覆盖（`tests/test_loop.py` 的
+  `test_early_stopping_triggers_after_patience`、`test_early_stopping_resets_wait_on_improvement`）
+
+要让真实场景触发早停，需要把 `--epochs` 提到 ≥ 8（patience 5 + 最优轮 2）。
+这也是"早停类机制必须用单元测试保证"的原因：真实训练里未必有机会触发一次。
 
 ### 观察 3：单位指标水平
 
@@ -162,7 +171,14 @@ S1 的训练基础设施**通过真实数据验证**：
 - [x] 排序指标可用且能反映泛化（捕捉到过拟合）
 - [x] checkpoint 含配置快照，可复现
 - [x] 固定负样本协议保证指标可比
-- [x] 早停 + 恢复最优权重在真实场景下正确工作
+- [x] `monitor` / `mode` 能正确选出最优轮次（best_epoch=2）
+
+**未在真实数据上验证到的一项（诚实说明）**：
+
+- [ ] 早停触发。本次只跑 6 轮且 `patience=5`，退步轮数（4）不足，
+      训练是跑满 epochs 自然结束的（`stopped_early=False`）。
+      早停逻辑由 `tests/test_loop.py` 的两个单元测试覆盖。
+      **这正是"机制类代码必须有单元测试"的理由**——真实训练里未必有机会触发一次。
 
 **可以进入 S1-W3（过拟合与正则）** —— 而且现在有了一个真实的过拟合案例
 （配置 B 的 epoch 3 之后），正好用来做正则化对照实验的起点。
