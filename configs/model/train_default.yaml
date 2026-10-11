@@ -1,0 +1,133 @@
+# @package model
+# 训练超参默认值
+#
+# 用法：被具体模型的配置覆盖，例如 sasrec_ml1m.yaml 里写
+#   defaults:
+#     - model/train_default
+#   train:
+#     lr: 0.001
+#
+# 字段与 recagent/train/config.py 的 TrainConfig 一一对应。
+# 改这里等于改所有模型的训练默认值，改具体模型配置只影响那一个实验。
+#
+# 设计原则：**所有超参必须在这里显式声明，不允许代码里硬编码**。
+# 否则"这个数字哪来的"永远说不清，实验也无法复现。
+
+train:
+  # ── 训练规模 ─────────────────────────────────────────────
+  epochs: 200
+  # 早停通常会在 30~60 轮内触发，200 是上限而非实际轮数
+
+  batch_size: 128
+  # 6GB 显存下的建议值。序列推荐（SASRec max_seq_len=50）可用 128；
+  # 显存紧张时降到 64 并把 accum_steps 设为 2，等效 batch 不变
+
+  # ── 优化 ─────────────────────────────────────────────────
+  optimizer: adamw
+  # sgd | adam | adamw
+  # 推荐用 adamw：权重衰减与自适应学习率解耦，正则效果符合预期
+
+  lr: 0.001
+  # adamw 的常用起点。SGD 通常需要 0.01~0.1
+
+  weight_decay: 0.01
+  # 权重衰减。Embedding 层多的推荐模型一般开 0.01~0.1；
+  # 若发现欠拟合（train loss 降不下去）先把它降到 0
+
+  momentum: 0.9
+  # 仅 optimizer=sgd 时生效
+
+  grad_clip: 5.0
+  # 梯度裁剪阈值。推荐模型的 embedding 梯度容易爆炸
+  # （热门物品被大量交互），建议保持开启；设为 null 表示关闭
+
+  accum_steps: 1
+  # 梯度累积步数。>1 时用显存换等效 batch：
+  # batch_size=64 + accum_steps=2 ≡ batch_size=128
+
+  # ── 学习率调度 ───────────────────────────────────────────
+  scheduler:
+    name: none
+    # none | step | multistep | cosine | onecycle
+    #
+    # 选型建议：
+    #   none       —— 先跑通，确认 baseline
+    #   cosine     —— 最常用，配合 warmup 效果好
+    #   onecycle   —— 训练步数确定且想快速收敛时用
+    #   step       —— 复现老论文时用
+
+    interval: epoch
+    # step | epoch
+    # **必须与调度器类型匹配**，配错不会报错但学习率曲线完全不对：
+    #   epoch 级：step / multistep / cosine
+    #   step  级：onecycle
+    # config.py 会在训练开始前校验并直接报错
+
+    warmup_steps: 0
+    # 线性预热步数。Transformer 类模型（SASRec）建议设为总步数的 5~10%，
+    # 例如 6000 步训练就填 300~600。CNN/MLP 类模型通常不需要
+
+    warmup_start_factor: 0.01
+    # 预热起点占目标 lr 的比例。0.01 表示从 lr 的 1% 开始升
+
+    min_lr_ratio: 0.0
+    # cosine 衰减的下限（占目标 lr 比例）。
+    # 0.0 = 衰减到 0；0.1 = 保留 10% 避免后期完全停滞
+
+    step_size: 10
+    # 仅 name=step 使用：每多少轮衰减一次
+
+    gamma: 0.1
+    # 衰减系数。step/multistep 都用到
+
+    milestones: []
+    # 仅 name=multistep 使用，如 [30, 60, 90]
+
+  # ── 早停与选优 ───────────────────────────────────────────
+  early_stop_patience: 20
+  # 验证指标连续多少轮不提升就停止。null 表示不早停。
+  # 20 是"给足探索空间"的值；调参阶段可降到 5 加快迭代
+
+  early_stop_min_delta: 0.0
+  # 提升幅度需超过此值才算"有提升"。
+  # 指标波动大时设 1e-4 之类的小值，避免被浮点噪声重置 patience
+
+  early_stop_restore_best: true
+  # 早停时恢复最优权重。
+  # **务必保持 true**：设为 false 会让你丢掉最好的模型，而且不会报错
+
+  monitor: loss
+  # 早停与选优依据的指标名。
+  # 序列推荐通常用 ndcg@10，纯训练阶段也可先用 loss
+
+  mode: min
+  # min：指标越小越好（loss）
+  # max：指标越大越好（ndcg@10 / recall@20 / hr@10）
+
+  # ── 运行 ─────────────────────────────────────────────────
+  eval_every_n_epochs: 1
+  # 每隔多少轮验证一次。调参阶段设 5 可显著加速，
+  # 但早停的粒度会变粗（patience 的实际等待时间变成 patience × 5 轮）
+
+  num_workers: 0
+  # DataLoader 工作进程数。Windows 下 >0 容易出问题，建议保持 0；
+  # Linux 上可设 4，数据加载是瓶颈时能提速
+
+  amp: false
+  # 自动混合精度。6GB 显存紧张时可开启省显存，
+  # 但前期建议关闭——训练稳定优先于省一点显存
+
+  device: auto
+  # auto | cuda | cpu。auto 表示有 GPU 就用。
+  # 注意 device=cpu 时如果模型较大，训练会非常慢
+
+  seed: 42
+  # 随机种子。所有实验记录里都要带上它
+
+  log_every_n_steps: 50
+  # 每多少 step 打印一次训练日志。0 表示不打印（测试时用）
+
+  checkpoint_dir: outputs/checkpoints
+  # checkpoint 输出目录。
+  # 每个实验建议单独一个目录，否则不同模型的 best.pt 会互相覆盖，
+  # 而覆盖是静默发生的——你以为在评测 A，实际加载的是 B。
