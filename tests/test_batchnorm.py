@@ -146,9 +146,7 @@ def test_running_var_uses_unbiased_estimate() -> None:
     biased = x.var(axis=0)
     unbiased = biased * x.shape[0] / (x.shape[0] - 1)
     relative_gap = float(np.mean(np.abs(biased - unbiased) / unbiased))
-    assert relative_gap == pytest.approx(1.0 / x.shape[0], abs=1e-6), (
-        "N=16 时两者相差 1/N = 6.25%"
-    )
+    assert relative_gap == pytest.approx(1.0 / x.shape[0], abs=1e-6), "N=16 时两者相差 1/N = 6.25%"
 
 
 # --------------------------------------------------------------------------
