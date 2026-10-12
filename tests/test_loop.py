@@ -20,6 +20,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pytest
 import torch
 import torch.nn as nn
@@ -547,3 +548,95 @@ def test_model_checkpoint_keeps_best_and_last(tmp_path: Path) -> None:
     assert checkpoint.best_path is not None and checkpoint.best_path.is_file()
     # top_k=1 → 只保留一个最优文件（0.5 的文件应被清掉）
     assert len(list(tmp_path.glob("epoch*.pt"))) == 1, "save_top_k=1 时不应留下多个文件"
+
+
+# --------------------------------------------------------------------------
+# 排序指标的平局处理（守护一个真实修过的严重 bug）
+# --------------------------------------------------------------------------
+
+
+def _one_positive_labels(rows: int, candidates: int) -> np.ndarray:
+    """构造「每行 1 个正样本、固定在第 0 列」的标签，与数据集协议一致。"""
+    labels = np.zeros((rows, candidates), dtype=np.float32)
+    labels[:, 0] = 1.0
+    return labels
+
+
+def test_ranking_metrics_flags_degenerate_scores() -> None:
+    """模型打分完全退化为常数时，指标必须归零并报警 —— 不能显示"完美"。
+
+    这是一个真实修过的严重 bug。旧实现用 `argpartition` 取 top-k，
+    当所有候选分数相同时，平局裁决沿用数组原始顺序，于是第 0 列
+    （恰好是固定位置的正样本）被排进 top-1，指标显示 **ndcg = 1.0**。
+
+    危害：**模型完全退化（最坏情况）时指标反而最好**，会掩盖训练失败。
+    实测旧行为：全 0 分数 → hr@10=1.0000, ndcg@10=1.0000。
+    """
+    scores = np.zeros((8, 100))
+    labels = _one_positive_labels(8, 100)
+
+    with pytest.warns(UserWarning, match="打分几乎相同"):
+        metrics = Trainer._ranking_metrics(scores, labels, top_k=10)
+
+    assert metrics["ndcg@10"] == 0.0, "退化时不应给出非零 ndcg（旧 bug 会给 1.0）"
+    assert metrics["hr@10"] == 0.0
+    assert metrics["mrr@10"] == 0.0
+
+
+def test_ranking_metrics_no_position_bias_when_tied() -> None:
+    """平局时不应因为"正样本在第 0 列"而命中。
+
+    构造：正样本列分数最低，其余列分数相同且更高。
+    正确行为是正样本排不进 top-k → hr = 0。
+    """
+    scores = np.zeros((8, 100))
+    scores[:, 1:] = 1.0  # 只有第 0 列（正样本）分数最低
+    labels = _one_positive_labels(8, 100)
+
+    metrics = Trainer._ranking_metrics(scores, labels, top_k=10)
+    assert metrics["hr@10"] == 0.0, "正样本分数最低却被命中，说明存在位置偏置"
+
+
+def test_ranking_metrics_is_reproducible() -> None:
+    """破平局用固定种子，同样输入必须给出完全相同的指标。"""
+    rng = np.random.default_rng(0)
+    scores = rng.normal(0.0, 1.0, (16, 100))
+    labels = _one_positive_labels(16, 100)
+
+    assert Trainer._ranking_metrics(scores, labels) == Trainer._ranking_metrics(scores, labels)
+
+
+def test_ranking_metrics_does_not_disturb_clean_ranking() -> None:
+    """修复不能影响正常情况：有明确区分度时，指标应与原来一致。
+
+    这条是"反向守护"——防止将来为了处理平局而把正常排序也搞乱。
+    """
+    rng = np.random.default_rng(0)
+    scores = rng.normal(0.0, 1.0, (8, 100))
+    labels = _one_positive_labels(8, 100)
+
+    # 修复前的实测值（有区分度时不涉及平局，因此不应变化）
+    metrics = Trainer._ranking_metrics(scores, labels, top_k=10)
+    assert metrics["hr@10"] == pytest.approx(0.375, abs=1e-6)
+    assert metrics["ndcg@10"] == pytest.approx(0.1114, abs=1e-4)
+
+
+def test_ranking_metrics_perfect_prediction_scores_one() -> None:
+    """真正完美的预测必须得 1.0 —— 确认修复没有把高分区也压掉。"""
+    scores = np.zeros((4, 100))
+    labels = np.zeros((4, 100), dtype=np.float32)
+    for row in range(4):
+        scores[row, row] = 10.0  # 每行的正样本分数最高
+        labels[row, row] = 1.0
+
+    metrics = Trainer._ranking_metrics(scores, labels, top_k=10)
+    assert metrics["ndcg@10"] == pytest.approx(1.0)
+    assert metrics["hr@10"] == pytest.approx(1.0)
+
+
+def test_ranking_metrics_handles_single_candidate_pool() -> None:
+    """候选集只有 1 个时 top_k 会被裁剪，不能崩。"""
+    scores = np.array([[0.5]])
+    labels = np.array([[1.0]], dtype=np.float32)
+    metrics = Trainer._ranking_metrics(scores, labels, top_k=10)
+    assert metrics["hr@1"] == pytest.approx(1.0)

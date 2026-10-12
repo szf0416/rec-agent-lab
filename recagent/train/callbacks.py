@@ -78,7 +78,15 @@ class TrainHistory:
 
     train_metrics: list[dict[str, float]] = field(default_factory=list)
     valid_metrics: list[dict[str, float]] = field(default_factory=list)
+    # 两层粒度的学习率记录，**别混用**：
+    # - lr_history：每个 epoch 记录一次（该轮最后一个 step 的 lr），看整体衰减趋势
+    # - step_lr_history：每个优化步记录一次，看 warmup 的上升段
+    #
+    # 只记 epoch 级会**看不到 warmup** —— 实测 warmup_steps=3 时预热在第一个 epoch
+    # 内就走完了，epoch 级的记录里只剩下后面的衰减段。
+    # 教训：想观察什么现象，就得记到对应粒度。
     lr_history: list[float] = field(default_factory=list)
+    step_lr_history: list[float] = field(default_factory=list)
     grad_norm_history: list[float] = field(default_factory=list)
     best_epoch: int = -1
     best_metric: float | None = None
@@ -107,6 +115,9 @@ class TrainHistory:
             "train_metrics": self.train_metrics,
             "valid_metrics": self.valid_metrics,
             "lr_history": self.lr_history,
+            # step 级 lr 可能上千条，JSON 会变大；但它是诊断 warmup 的唯一依据，
+            # 保留完整记录（12 轮 × 512 step ≈ 6k 个 float，约 100KB，可接受）。
+            "step_lr_history": self.step_lr_history,
             "grad_norm_history": self.grad_norm_history,
             "best_epoch": self.best_epoch,
             "best_metric": self.best_metric,

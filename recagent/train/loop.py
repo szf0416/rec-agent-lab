@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import time
+import warnings
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
@@ -34,6 +35,10 @@ from recagent.utils.logging import get_logger
 from recagent.utils.seeding import seed_everything, seed_worker
 
 logger = get_logger(__name__)
+
+# 排序指标破平局用的固定种子。必须是固定的：
+# 指标要可复现，不能每次评测因为随机破平局而抖动。
+_TIE_BREAK_SEED = 20241009
 
 
 @runtime_checkable
@@ -357,6 +362,9 @@ class Trainer:
             self.optimizer.step()
             self.optimizer.zero_grad(set_to_none=True)
             lr = self._apply_step_lr()
+            # 逐 step 记录 lr：只看 epoch 级记录会看不到 warmup 的上升段
+            # （warmup 一般在第一个 epoch 内就走完）。见 TrainHistory 的字段说明。
+            self.history.step_lr_history.append(lr)
             self.global_step += 1
 
             if (
@@ -472,9 +480,29 @@ class Trainer:
         评测协议：每行是一个用户的候选集，每行恰有一个正样本。
         这是"1 正 + N 负"的标准离线评测设置。
 
+        ## 必须处理平局（这是一个真实修过的严重 bug）
+
+        本项目的候选集把**正样本固定在第 0 列**。如果直接用
+        `argpartition` 取 top-k，当所有候选分数相同（模型退化）时，
+        平局裁决会沿用数组原始顺序 —— 于是第 0 列（正样本）被排进 top-1，
+        指标显示 **ndcg = 1.0（完美）**。
+
+        实测：
+
+            全 0 分数（模型完全退化）  hr@10=1.0000  ndcg@10=1.0000   ← 假完美
+            正样本随机位置时            hr@10=0.1250  ndcg@10=0.0538   ← 随机水平
+
+        **即"最坏的情况看起来最好"，会掩盖训练失败。**
+        所以必须用随机数做次键破平局，消除位置偏置。
+
+        ## 另外会检测退化
+
+        若模型在所有候选上的打分几乎相同（标准差极小），说明它没有区分能力，
+        此时任何排序指标都不可信，直接返回 0 并报警 —— 而不是给出一个
+        因位置偏置而虚高的数字。
+
         **注意**：这是为了让训练循环能报告"可判断优劣"的数字而写的简版。
-        S3 会实现完整的指标模块（含 Recall@K、覆盖率、多样性，
-        以及与 RecBole 的交叉校验），届时替换本函数。
+        S3 会实现完整指标模块（含 Recall@K、覆盖率、多样性，与 RecBole 交叉校验）。
         """
         if scores.ndim != 2 or labels.ndim != 2 or scores.shape != labels.shape:
             return {}
@@ -482,12 +510,27 @@ class Trainer:
         if k < 1:
             return {}
 
-        # 每行取分数最高的 k 个（argpartition 是 O(n)，比全排序快）
-        topk_idx = np.argpartition(-scores, kth=k - 1, axis=1)[:, :k]
-        # 组内再按分数精确排序：take_along_axis 需要与 topk_idx 同形的索引
-        topk_sorted = np.take_along_axis(
-            topk_idx, np.argsort(-np.take_along_axis(scores, topk_idx, axis=1), axis=1), axis=1
-        )
+        # --- 退化检测：区分能力为 0 时，指标无意义 ---
+        # 边界：候选集只有 1 个时标准差必然为 0，那是正常的，不能算退化。
+        row_std = scores.std(axis=1)
+        if scores.shape[1] > 1 and bool(np.all(row_std < 1e-8)):
+            warnings.warn(
+                "模型在所有候选上的打分几乎相同（该行标准差 < 1e-8），"
+                "排序指标无意义。通常意味着 embedding 被压死或梯度没回传，"
+                "请检查优化器与 weight_decay 组合。",
+                stacklevel=2,
+            )
+            return {f"hr@{k}": 0.0, f"ndcg@{k}": 0.0, f"mrr@{k}": 0.0}
+
+        # --- 带平局处理的排序 ---
+        # lexsort 是「多键升序稳定排序」，最后一个键优先级最高。
+        # 传 (tie_breaker, -scores)：分数为主键（-scores 升序 = scores 降序），
+        # 随机数为次键 —— 平局时按随机数排，彻底消除"第 0 列优先"的位置偏置。
+        # 随机数用固定种子生成，保证指标可复现。
+        rng = np.random.default_rng(_TIE_BREAK_SEED)
+        tie_breaker = rng.random(scores.shape)
+        order = np.lexsort((tie_breaker, -scores), axis=1)
+        topk_sorted = order[:, :k]
 
         hit = np.zeros(scores.shape[0], dtype=bool)
         ndcg = np.zeros(scores.shape[0], dtype=float)
