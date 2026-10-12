@@ -168,6 +168,8 @@ curl -X POST localhost:8000/recommend -H 'Content-Type: application/json' \
 | [docs/DECISIONS.md](docs/DECISIONS.md) | 技术选型记录及理由 |
 | [docs/RESUME.md](docs/RESUME.md) | 简历条目模板、讲稿框架、高频追问清单 |
 | [docs/PUSH.md](docs/PUSH.md) | 推送到 GitHub 的操作手册与排障 |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | **排查手册**：loss 不降的 5 种原因、诊断三步法 |
+| [docs/paper-notes/s1-dl-basics.md](docs/paper-notes/s1-dl-basics.md) | S1 复盘：验收自查、两个必答问题、踩坑汇总 |
 
 ---
 
@@ -175,16 +177,32 @@ curl -X POST localhost:8000/recommend -H 'Content-Type: application/json' \
 
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
-| S0 | 环境与仓库骨架 | 🚧 进行中 |
-| S1 | 深度学习基础 + 手写训练循环 | ⬜ |
-| S2 | Transformer 从零实现 | ⬜ |
+| S0 | 环境与仓库骨架 | ✅ |
+| S1 | 深度学习基础 + 手写训练循环 | ✅ |
+| S2 | Transformer 从零实现 | 🚧 下一步 |
 | S3 | 推荐模型（召回+排序） | ⬜ |
 | S4 | LLM 微调 | ⬜ |
 | S5 | 部署与量化 | ⬜ |
 | S6 | 推荐 Agent | ⬜ |
 | S7 | 消融、报告、简历包装 | ⬜ |
 
-> S0 已完成骨架搭建与首次提交，等你按 `docs/ROADMAP.md` 逐项验收。
+### S1 完成情况
+
+**验收标准逐条达标**（详见 [docs/paper-notes/s1-dl-basics.md](docs/paper-notes/s1-dl-basics.md)）：
+
+- ✅ 手推两层 MLP 反向传播，与 PyTorch 误差 **2.78e-17**（`tests/test_gradient_check.py`，18 个测试进 CI）
+- ✅ 数值梯度独立验证；不可导点失效边界已量化（**4.50e-03 vs 5.21e-12**）
+- ✅ 能回答 Adam 泛化问题（含 **Adam+L2 压死 embedding** 的实测：同 wd 下 0.0468 vs 0.1705）
+- ✅ 能回答 BatchNorm 训练/推理差异（`tests/test_batchnorm.py`，8 个测试进 CI）
+- ✅ loss 不降的 5 种原因与排查手段（[docs/troubleshooting.md](docs/troubleshooting.md)）
+- ✅ 训练循环通用：三个实验（端到端验证 / 正则化 / 优化器）共用同一个 `Trainer`，未改接口
+
+| 指标 | 值 |
+| --- | --- |
+| 测试 | **227 个**，全部秒级 |
+| 实验报告 | 3 份（端到端验证 / 正则化 / 优化器）|
+| 实验配置 | 24 组（W3 九组 + W4 十五组）|
+| 面试材料 | [速查卡](docs/interview/S1-cheatsheet.md) + [14 题详解](docs/interview/S1-qa.md) |
 
 ## License
 
