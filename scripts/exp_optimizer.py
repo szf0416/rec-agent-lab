@@ -78,9 +78,14 @@ OPTIMIZER_EXPERIMENTS: list[OptConfig] = [
     # ↓ 这两行是本模式的核心对照：同样的 weight_decay，不同路径
     OptConfig("adam_l2_wd0.01", optimizer="adam", weight_decay=0.01, note="Adam 的 L2 路径"),
     OptConfig("adamw_wd0.01", optimizer="adamw", weight_decay=0.01, note="AdamW 的解耦衰减"),
-    # SGD 需要显著更大的 lr，否则几乎不动
-    OptConfig("sgd", optimizer="sgd", lr=0.05, note="SGD 无动量"),
-    OptConfig("sgd_momentum", optimizer="sgd", lr=0.05, momentum=0.9, note="SGD + 动量"),
+    # SGD 需要显著更大的 lr，否则几乎不动。
+    #
+    # 必须显式写 momentum=0.0：OptConfig 的 momentum 默认值是 0.9，
+    # 不写的话 "sgd" 与 "sgd_momentum" 会变成完全相同的配置。
+    # 第一次跑时两者 train_loss / ndcg / 最优轮 一模一样，就是这个原因。
+    # 教训：两个配置结果**完全相同**时，先怀疑配置重复，别当成实验噪声。
+    OptConfig("sgd", optimizer="sgd", momentum=0.0, lr=0.05, note="SGD 无动量(momentum=0)"),
+    OptConfig("sgd_momentum", optimizer="sgd", momentum=0.9, lr=0.05, note="SGD + 动量"),
 ]
 
 # --------------------------------------------------------------------------
@@ -153,9 +158,7 @@ class ExperimentRunner:
         self.user_set = user_set
 
         sampler = NegativeSampler(self.negative_pool.tolist(), seed=args.seed)
-        self.val_negatives = sampler.eval_negatives(
-            sorted(self.sequences), num_neg=args.eval_neg
-        )
+        self.val_negatives = sampler.eval_negatives(sorted(self.sequences), num_neg=args.eval_neg)
 
         logger.info(
             "数据就绪: %s 用户 | %s 训练交互 | %s 验证用户 | 候选池 %s",
@@ -320,8 +323,12 @@ def run_lr_range(runner: ExperimentRunner, args: argparse.Namespace) -> dict[str
         fixed_negatives=True,
     )
     loader = DataLoader(
-        train_dataset, batch_size=256, shuffle=True, num_workers=0,
-        collate_fn=collate, drop_last=True,
+        train_dataset,
+        batch_size=256,
+        shuffle=True,
+        num_workers=0,
+        collate_fn=collate,
+        drop_last=True,
     )
 
     model = SequentialRecallModel(
@@ -331,10 +338,14 @@ def run_lr_range(runner: ExperimentRunner, args: argparse.Namespace) -> dict[str
         dropout=0.0,
     ).to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1.0)
     lr_min, lr_max = 1e-6, 3e-1
+    # base_lr 必须是 lr_min：LambdaLR 的因子是**乘法**的，
+    # 实际 lr = base_lr × factor。若 base_lr 设成 1.0，实际 lr 会跑到
+    # 1.0 × (lr_max/lr_min) = 3e5，完全偏离扫描区间 ——
+    # 第一次跑就出现了 lr=4.16e+01 这种越界值（超过扫描上界 0.3 一百倍）。
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr_min)
     total_steps = min(600, len(loader) * 2)
-    # lr = lr_min * (lr_max/lr_min)^(step/total)
+    # factor 从 1 增长到 lr_max/lr_min，于是 lr 从 lr_min 增长到 lr_max
     growth = math.log(lr_max / lr_min)
     scheduler = LambdaLR(
         optimizer, lr_lambda=lambda step: math.exp(growth * step / max(total_steps - 1, 1))
@@ -362,7 +373,9 @@ def run_lr_range(runner: ExperimentRunner, args: argparse.Namespace) -> dict[str
             loss_value = float(loss.detach().item())
             # 指数滑动平均：单 batch 的 loss 噪声很大，不平滑根本看不出趋势
             smoothed_loss = loss_value if step == 0 else 0.9 * smoothed_loss + 0.1 * loss_value
-            records.append({"step": step, "lr": current_lr, "loss": loss_value, "smooth_loss": smoothed_loss})
+            records.append(
+                {"step": step, "lr": current_lr, "loss": loss_value, "smooth_loss": smoothed_loss}
+            )
             step += 1
 
     # 找"平滑 loss 下降最快"的位置（用负斜率最大的窗口）
@@ -424,7 +437,11 @@ def print_table(results: list[dict[str, Any]]) -> None:
             print(
                 f"    {row['name']}: {row['train_loss_first']:.4f} -> "
                 f"{row['train_loss_last']:.4f}"
-                + ("   ← 恰好是 ln(2)=0.6931，疑似输出恒为 0" if abs(row["train_loss_first"] - math.log(2)) < 1e-3 else "")
+                + (
+                    "   ← 恰好是 ln(2)=0.6931，疑似输出恒为 0"
+                    if abs(row["train_loss_first"] - math.log(2)) < 1e-3
+                    else ""
+                )
             )
 
 
