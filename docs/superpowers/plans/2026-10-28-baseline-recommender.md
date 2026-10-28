@@ -1,6 +1,6 @@
 # Baseline Recommender Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 在现有 ML-1M 预处理产物上提供只依赖训练期数据的 Popularity + ItemCF 电影推荐与可运行命令行演示。
 
@@ -33,11 +33,11 @@
 
 **Interfaces:** `Catalog.load(processed_dir: Path) -> Catalog`；字段 `movies: dict[int, MovieInfo]`、`history: dict[int, tuple[int, ...]]`、`item_users: dict[int, frozenset[int]]`、`popularity: dict[int, int]`。`MovieInfo(item_id: int, title: str, genres: tuple[str, ...])`。
 
-- [ ] **Step 1: Write failing tests**：用 `tmp_path` 写入 `items.json` 和 `interactions_train.csv`，再额外写入 `interactions_test.csv` 含仅测试期物品；断言 `Catalog.load` 的 `history`、`popularity` 不含测试期物品，并断言缺少必需文件时报 `FileNotFoundError`。
-- [ ] **Step 2: Verify red**：运行 `python -m pytest tests/test_baseline.py -q`，预期因 `recagent.engine.store` 尚不存在而失败。
-- [ ] **Step 3: Implement**：`MovieInfo` 为 frozen dataclass；`Catalog.load` 用 `json.loads` 与 `csv.DictReader` 解析文件，按 `(timestamp, item_id)` 对每个用户历史稳定排序；遇到训练交互引用不存在的电影 ID 时抛 `ValueError`。`item_users` 用集合构建后冻结，`popularity` 按训练交互次数累计。
-- [ ] **Step 4: Verify green**：运行 `python -m pytest tests/test_baseline.py -q`，预期全部通过；运行 `ruff check recagent/engine tests/test_baseline.py` 和 `mypy recagent/engine`。
-- [ ] **Step 5: Commit**：`git add recagent/engine tests/test_baseline.py && git commit -m "feat: load train-only recommendation catalog"`。
+- [x] **Step 1: Write failing tests**：用 `tmp_path` 写入 `items.json` 和 `interactions_train.csv`，再额外写入 `interactions_test.csv` 含仅测试期物品；断言 `Catalog.load` 的 `history`、`popularity` 不含测试期物品，并断言缺少必需文件时报 `FileNotFoundError`。
+- [x] **Step 2: Verify red**：运行 `python -m pytest tests/test_baseline.py -q`，预期因 `recagent.engine.store` 尚不存在而失败。
+- [x] **Step 3: Implement**：`MovieInfo` 为 frozen dataclass；`Catalog.load` 用 `json.loads` 与 `csv.DictReader` 解析文件，按 `(timestamp, item_id)` 对每个用户历史稳定排序；遇到训练交互引用不存在的电影 ID 时抛 `ValueError`。`item_users` 用集合构建后冻结，`popularity` 按训练交互次数累计。
+- [x] **Step 4: Verify green**：运行 `python -m pytest tests/test_baseline.py -q`，预期全部通过；运行 `ruff check recagent/engine tests/test_baseline.py` 和 `mypy recagent/engine`。
+- [x] **Step 5: Commit**：`git add recagent/engine tests/test_baseline.py && git commit -m "feat: load train-only recommendation catalog"`。
 
 ### Task 2: Popularity 与 ItemCF 推荐
 
@@ -45,11 +45,11 @@
 
 **Interfaces:** `BaselineRecommender(catalog: Catalog)`；`recommend(user_id: int | None, top_k: int = 10, genres: tuple[str, ...] = (), exclude_items: frozenset[int] = frozenset()) -> list[Recommendation]`；`Recommendation(item_id: int, title: str, genres: tuple[str, ...], score: float, source: str)`。
 
-- [ ] **Step 1: Write failing tests**：小型数据中，断言已看物品被排除；共同观看者较多的候选优先；未知用户按热度回退；题材过滤和显式排除生效；同分排序稳定；`top_k=0` 与 `top_k=51` 抛 `ValueError`。
-- [ ] **Step 2: Verify red**：运行 `python -m pytest tests/test_baseline.py -q`，预期 `BaselineRecommender` 缺失相关用例失败。
-- [ ] **Step 3: Implement**：ItemCF 分数为用户历史每部电影与候选电影的共同观看用户数，除以两电影观看用户数乘积的平方根后求和；若用户无历史则用 `log1p(popularity)`；有历史时 `score = itemcf_score + 0.01 * log1p(popularity)`。只评分训练期出现的物品；先做排除与题材过滤，再按 `(-score, item_id)` 取前 `top_k`。`source` 为 `itemcf` 或 `popularity`。
-- [ ] **Step 4: Verify green**：运行 `python -m pytest tests/test_baseline.py -q`、`ruff check recagent/engine tests/test_baseline.py`、`mypy recagent/engine`，预期通过。
-- [ ] **Step 5: Commit**：`git add recagent/engine tests/test_baseline.py && git commit -m "feat: add deterministic popularity and itemcf baseline"`。
+- [x] **Step 1: Write failing tests**：小型数据中，断言已看物品被排除；共同观看者较多的候选优先；未知用户按热度回退；题材过滤和显式排除生效；同分排序稳定；`top_k=0` 与 `top_k=51` 抛 `ValueError`。
+- [x] **Step 2: Verify red**：运行 `python -m pytest tests/test_baseline.py -q`，预期 `BaselineRecommender` 缺失相关用例失败。
+- [x] **Step 3: Implement**：ItemCF 分数为用户历史每部电影与候选电影的共同观看用户数，除以两电影观看用户数乘积的平方根后求和；若用户无历史则用 `log1p(popularity)`；有历史时 `score = itemcf_score + 0.01 * log1p(popularity)`。只评分训练期出现的物品；先做排除与题材过滤，再按 `(-score, item_id)` 取前 `top_k`。`source` 为 `itemcf` 或 `popularity`。
+- [x] **Step 4: Verify green**：运行 `python -m pytest tests/test_baseline.py -q`、`ruff check recagent/engine tests/test_baseline.py`、`mypy recagent/engine`，预期通过。
+- [x] **Step 5: Commit**：`git add recagent/engine tests/test_baseline.py && git commit -m "feat: add deterministic popularity and itemcf baseline"`。
 
 ### Task 3: 命令行与使用文档
 
@@ -57,11 +57,11 @@
 
 **Interfaces:** `python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --user-id 1 --genres Comedy --top-k 5` 输出包含 `items` 数组的 JSON，退出码为 0。
 
-- [ ] **Step 1: Write failing test**：用 `subprocess.run` 调脚本并传入合成数据目录，断言退出码 0、输出可解析 JSON、返回条数不超 `top_k`、每项 ID 来自训练期。
-- [ ] **Step 2: Verify red**：运行 `python -m pytest tests/test_baseline.py -q`，预期因脚本缺失失败。
-- [ ] **Step 3: Implement**：脚本用 `argparse` 解析 `--processed-dir`、`--user-id`、可重复的 `--genres`、`--top-k`，加载 `Catalog` 后调用推荐器，使用 `json.dumps(..., ensure_ascii=False, indent=2)` 输出。README 加数据准备及两条命令行示例，并说明此阶段是确定性基线。
-- [ ] **Step 4: Verify green**：运行 `python -m pytest tests/test_baseline.py -q`、`python -m pytest -q`、`ruff check .`、`ruff format --check .`、`mypy recagent`；再用实际 ML-1M 产物运行示例命令，检查输出。
-- [ ] **Step 5: Commit**：`git add scripts/recommend_baseline.py README.md tests/test_baseline.py && git commit -m "feat: expose baseline recommendation demo"`。
+- [x] **Step 1: Write failing test**：用 `subprocess.run` 调脚本并传入合成数据目录，断言退出码 0、输出可解析 JSON、返回条数不超 `top_k`、每项 ID 来自训练期。
+- [x] **Step 2: Verify red**：运行 `python -m pytest tests/test_baseline.py -q`，预期因脚本缺失失败。
+- [x] **Step 3: Implement**：脚本用 `argparse` 解析 `--processed-dir`、`--user-id`、可重复的 `--genres`、`--top-k`，加载 `Catalog` 后调用推荐器，使用 `json.dumps(..., ensure_ascii=False, indent=2)` 输出。README 加数据准备及两条命令行示例，并说明此阶段是确定性基线。
+- [x] **Step 4: Verify green**：运行 `python -m pytest tests/test_baseline.py -q`、`python -m pytest -q`、`ruff check .`、`ruff format --check .`、`mypy recagent`；再用实际 ML-1M 产物运行示例命令，检查输出。
+- [x] **Step 5: Commit**：`git add scripts/recommend_baseline.py README.md tests/test_baseline.py && git commit -m "feat: expose baseline recommendation demo"`。
 
 ## Review gates
 
