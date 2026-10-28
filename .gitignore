@@ -77,3 +77,4 @@ logs/
 
 # --- 本地工具（沙箱内 pip --target 安装的可执行文件，不入库）---
 .tools/
+/.worktrees/
