@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from recagent.engine.baseline import BaselineRecommender
-from recagent.engine.store import Catalog
+from recagent.engine.store import Catalog, MovieInfo
 
 
 @pytest.fixture
@@ -85,3 +85,22 @@ def test_baseline_cli_outputs_training_items(tiny_catalog_dir):
     payload = json.loads(result.stdout)
     assert len(payload["items"]) == 2
     assert all(item["item_id"] in {1, 2, 3} for item in payload["items"])
+
+
+def test_candidate_scoring_uses_same_set_but_different_rankings():
+    catalog = Catalog(
+        movies={i: MovieInfo(i, str(i), ("Comedy",)) for i in (1, 2, 3)},
+        history={1: (1,)},
+        item_users={1: frozenset({1, 2}), 2: frozenset({2}), 3: frozenset({3, 4, 5})},
+        popularity={1: 2, 2: 1, 3: 3},
+    )
+    recommender = BaselineRecommender(catalog)
+    popular = recommender.score_candidates(1, (2, 3), mode="popularity")
+    itemcf = recommender.score_candidates(1, (2, 3), mode="itemcf")
+    assert {r.item_id for r in popular} == {r.item_id for r in itemcf} == {2, 3}
+    assert [r.item_id for r in popular] == [3, 2]
+    assert [r.item_id for r in itemcf] == [2, 3]
+    with pytest.raises(ValueError):
+        recommender.score_candidates(1, (2,), mode="other")
+    with pytest.raises(ValueError):
+        recommender.score_candidates(1, (4,), mode="popularity")
