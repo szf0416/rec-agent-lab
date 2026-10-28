@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 import numpy as np
@@ -107,8 +107,8 @@ class NegativeSampler:
             int(item): idx for idx, item in enumerate(self.pool)
         }
         self._weights = self._build_weights(frequencies) if strategy != "uniform" else None
-        # 评测用固定负样本缓存：key 为 num_neg，value 为 user -> 负样本元组
-        self._eval_cache: dict[int, dict[int, tuple[int, ...]]] = {}
+        # 排除集合也是题集的一部分，不能仅按 num_neg 缓存。
+        self._eval_cache: dict[tuple[int, int, frozenset[int]], tuple[int, ...]] = {}
 
     def _build_weights(self, frequencies: Counter[int] | None) -> np.ndarray:
         assert frequencies is not None  # 由 __init__ 保证
@@ -179,26 +179,22 @@ class NegativeSampler:
         users: Iterable[int],
         *,
         num_neg: int = 100,
+        exclude_by_user: Mapping[int, set[int]] | None = None,
     ) -> dict[int, tuple[int, ...]]:
-        """为评测生成**固定**负样本（约束二）。
+        """为评测生成固定负样本，排除已知正样本（约束二）。
 
         同一个 sampler 实例对同一批用户重复调用会命中缓存，返回完全相同的负样本，
         保证不同模型在同一题集上比较。
         """
         if num_neg < 1:
             raise ParseError(f"num_neg 至少为 1，收到 {num_neg}")
-        if num_neg in self._eval_cache:
-            cached = self._eval_cache[num_neg]
-            missing = [u for u in users if u not in cached]
-            if not missing:
-                return {u: cached[u] for u in users}
-            logger.debug("评测负样本缓存缺少 %s 个用户，补采", len(missing))
-            for user_id in missing:
-                cached[user_id] = tuple(self._draw(num_neg, exclude=None))
-            return {u: cached[u] for u in users}
-
-        sampled = {user_id: tuple(self._draw(num_neg, exclude=None)) for user_id in users}
-        self._eval_cache[num_neg] = sampled
+        sampled: dict[int, tuple[int, ...]] = {}
+        for user_id in users:
+            excluded = frozenset((exclude_by_user or {}).get(user_id, set()))
+            key = (num_neg, user_id, excluded)
+            if key not in self._eval_cache:
+                self._eval_cache[key] = tuple(self._draw(num_neg, exclude=set(excluded)))
+            sampled[user_id] = self._eval_cache[key]
         logger.info("生成 %s 个用户的固定评测负样本（每人 %s 个）", len(sampled), num_neg)
         return sampled
 

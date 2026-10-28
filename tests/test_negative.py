@@ -170,6 +170,15 @@ def test_eval_negatives_cache_extends_for_new_users() -> None:
     assert len(extended[3]) == 10
 
 
+def test_eval_negatives_exclude_known_items_and_cache_by_exclusions() -> None:
+    sampler = NegativeSampler([1, 2, 3, 4, 5], seed=42)
+    first = sampler.eval_negatives([1], num_neg=3, exclude_by_user={1: {1, 2}})
+    assert set(first[1]) == {3, 4, 5}
+    assert sampler.eval_negatives([1], num_neg=3, exclude_by_user={1: {1, 2}}) == first
+    changed = sampler.eval_negatives([1], num_neg=3, exclude_by_user={1: {3, 4}})
+    assert set(changed[1]) == {1, 2, 5}
+
+
 # --------------------------------------------------------------------------
 # popularity_aware
 # --------------------------------------------------------------------------
