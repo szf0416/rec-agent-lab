@@ -1,5 +1,17 @@
 # RecAgent Lab · 从零构建推荐系统到 LLM 推荐 Agent
 
+> **当前可运行版本**：训练期 Popularity + ItemCF 推荐基线。Agent、API 与对话评测正在按 [四至六周设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)推进；下面较长的阶段路线图描述后续目标，不代表功能均已交付。
+
+```bash
+# 首次使用先按下方“快速开始”准备 MovieLens-1M，并运行预处理。
+python scripts/preprocess.py --config configs/data/ml1m.yaml
+python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --user-id 6040 --genres Comedy --top-k 5
+# 不传 --user-id 时展示无历史用户的热度回退。
+python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --top-k 5
+```
+
+该基线只读取 `interactions_train.csv` 与 `items.json`；输出电影必须在训练期出现。`--genres` 可重复传入，使用 MovieLens 原始英文题材名。当前脚本是确定性推荐，不调用 LLM。
+
 > 一个项目，走通「深度学习 → Transformer → 推荐模型训练 → LLM 微调 → 量化部署 → Agent 应用 → 工程化落地」的完整链路。
 >
 > 目标读者：我自己（面试官 / 面试官请看 [docs/RESUME.md](docs/RESUME.md)）。

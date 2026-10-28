@@ -2,6 +2,9 @@
 
 import csv
 import json
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -68,3 +71,17 @@ def test_top_k_is_bounded(tiny_catalog_dir, top_k):
     recommender = BaselineRecommender(Catalog.load(tiny_catalog_dir))
     with pytest.raises(ValueError):
         recommender.recommend(user_id=1, top_k=top_k)
+
+
+def test_baseline_cli_outputs_training_items(tiny_catalog_dir):
+    script = Path(__file__).resolve().parents[1] / "scripts" / "recommend_baseline.py"
+    result = subprocess.run(
+        [sys.executable, str(script), "--processed-dir", str(tiny_catalog_dir), "--top-k", "2"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert len(payload["items"]) == 2
+    assert all(item["item_id"] in {1, 2, 3} for item in payload["items"])
