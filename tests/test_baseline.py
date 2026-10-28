@@ -104,3 +104,18 @@ def test_candidate_scoring_uses_same_set_but_different_rankings():
         recommender.score_candidates(1, (2,), mode="other")
     with pytest.raises(ValueError):
         recommender.score_candidates(1, (4,), mode="popularity")
+
+
+def test_batch_candidate_scores_match_reference():
+    catalog = Catalog(
+        movies={i: MovieInfo(i, str(i), ("Drama",)) for i in (1, 2, 3)},
+        history={1: (1, 2), 2: (1, 3), 3: (2, 3)},
+        item_users={1: frozenset({1, 2}), 2: frozenset({1, 3}), 3: frozenset({2, 3})},
+        popularity={1: 2, 2: 2, 3: 2},
+    )
+    recommender = BaselineRecommender(catalog)
+    for mode in ("popularity", "itemcf"):
+        reference = recommender.score_candidates(1, (1, 2, 3), mode=mode)
+        batch = recommender.score_candidates_batch(1, (1, 2, 3), mode=mode)
+        assert [item.item_id for item in batch] == [item.item_id for item in reference]
+        assert [item.score for item in batch] == pytest.approx([item.score for item in reference])

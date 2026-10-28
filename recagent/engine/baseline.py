@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from math import log1p, sqrt
 from typing import Literal
 
+import numpy as np
+from scipy.sparse import csr_matrix
+
 from recagent.engine.store import Catalog
 
 
@@ -23,6 +26,30 @@ class BaselineRecommender:
 
     def __init__(self, catalog: Catalog) -> None:
         self.catalog = catalog
+        self._cosine: csr_matrix | None = None
+
+    def _prepare_cosine(self) -> csr_matrix:
+        if self._cosine is not None:
+            return self._cosine
+        user_ids = sorted(self.catalog.history)
+        rows: list[int] = []
+        cols: list[int] = []
+        for row, user_id in enumerate(user_ids):
+            for item_id in set(self.catalog.history[user_id]):
+                rows.append(row)
+                cols.append(item_id)
+        size = max(self.catalog.popularity) + 1
+        matrix = csr_matrix(
+            (np.ones(len(rows), dtype=np.float64), (rows, cols)),
+            shape=(len(user_ids), size),
+        )
+        cooccurrence = (matrix.T @ matrix).tocoo()
+        frequencies = np.zeros(size, dtype=np.float64)
+        for item_id, viewers in self.catalog.item_users.items():
+            frequencies[item_id] = len(viewers)
+        cooccurrence.data /= np.sqrt(frequencies[cooccurrence.row] * frequencies[cooccurrence.col])
+        self._cosine = cooccurrence.tocsr()
+        return self._cosine
 
     def _score(self, user_id: int | None, item_id: int, mode: str) -> float:
         popularity = self.catalog.popularity[item_id]
@@ -61,6 +88,40 @@ class BaselineRecommender:
                     genres=movie.genres,
                     score=self._score(user_id, item_id, mode),
                     source="itemcf" if mode == "itemcf" and has_history else "popularity",
+                )
+            )
+        return sorted(results, key=lambda item: (-item.score, item.item_id))
+
+    def score_candidates_batch(
+        self,
+        user_id: int | None,
+        candidate_ids: tuple[int, ...],
+        mode: Literal["popularity", "itemcf"],
+    ) -> list[Recommendation]:
+        """稀疏矩阵批量打分，数值定义与 score_candidates 相同。"""
+        if mode not in {"popularity", "itemcf"}:
+            raise ValueError(f"未知排序模式: {mode}")
+        if len(candidate_ids) != len(set(candidate_ids)):
+            raise ValueError("候选电影 ID 不得重复")
+        if any(item_id not in self.catalog.popularity for item_id in candidate_ids):
+            raise ValueError("候选电影不在训练期")
+        history = self.catalog.history.get(user_id, ()) if user_id is not None else ()
+        if mode == "popularity" or not history:
+            return self.score_candidates(user_id, candidate_ids, mode="popularity")
+        cosine = self._prepare_cosine()
+        similarities = np.asarray(
+            cosine[list(set(history)), :][:, list(candidate_ids)].sum(axis=0)
+        ).ravel()
+        results = []
+        for item_id, similarity in zip(candidate_ids, similarities, strict=True):
+            movie = self.catalog.movies[item_id]
+            results.append(
+                Recommendation(
+                    item_id=item_id,
+                    title=movie.title,
+                    genres=movie.genres,
+                    score=float(similarity) + 0.01 * log1p(self.catalog.popularity[item_id]),
+                    source="itemcf",
                 )
             )
         return sorted(results, key=lambda item: (-item.score, item.item_id))

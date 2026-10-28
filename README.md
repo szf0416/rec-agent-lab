@@ -8,9 +8,11 @@ python scripts/preprocess.py --config configs/data/ml1m.yaml
 python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --user-id 6040 --genres Comedy --top-k 5
 # 不传 --user-id 时展示无历史用户的热度回退。
 python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --top-k 5
+python scripts/evaluate_baseline.py --processed-dir data/processed/ml1m --k 10
 ```
 
 该基线只读取 `interactions_train.csv` 与 `items.json`；输出电影必须在训练期出现。`--genres` 可重复传入，使用 MovieLens 原始英文题材名。当前脚本是确定性推荐，不调用 LLM。
+评测脚本使用每用户 1 个测试正样本和固定的 100 个负样本；其 NDCG/Recall 只代表这套采样候选的排序表现，结果见 [基线报告](reports/baseline-sampled-ml1m.md)。
 
 > 一个项目，走通「深度学习 → Transformer → 推荐模型训练 → LLM 微调 → 量化部署 → Agent 应用 → 工程化落地」的完整链路。
 >
