@@ -1,6 +1,6 @@
 # RecAgent Lab · 从零构建推荐系统到 LLM 推荐 Agent
 
-> **当前可运行版本**：训练期 Popularity + ItemCF 推荐基线。Agent、API 与对话评测正在按 [四至六周设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)推进；下面较长的阶段路线图描述后续目标，不代表功能均已交付。
+> **当前可运行版本**：训练期 Popularity + ItemCF 推荐基线、固定候选评测和无密钥的确定性工具流程。真实 LLM 工具调用、API 与对话评测正在按 [四至六周设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)推进；下面较长的阶段路线图描述后续目标，不代表功能均已交付。
 
 ```bash
 # 首次使用先按下方“快速开始”准备 MovieLens-1M，并运行预处理。
@@ -9,10 +9,12 @@ python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --user-
 # 不传 --user-id 时展示无历史用户的热度回退。
 python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --top-k 5
 python scripts/evaluate_baseline.py --processed-dir data/processed/ml1m --k 10
+python scripts/run_agent_demo.py --processed-dir data/processed/ml1m --user-id 6040 --query "想看科幻，不要恐怖" --top-k 3
 ```
 
 该基线只读取 `interactions_train.csv` 与 `items.json`；输出电影必须在训练期出现。`--genres` 可重复传入，使用 MovieLens 原始英文题材名。当前脚本是确定性推荐，不调用 LLM。
 评测脚本使用每用户 1 个测试正样本和固定的 100 个负样本；其 NDCG/Recall 只代表这套采样候选的排序表现，结果见 [基线报告](reports/baseline-sampled-ml1m.md)。
+`run_agent_demo.py` 展示**确定性工具流程**，无 API 密钥也能运行，并返回偏好解析、推荐结果与逐步工具 trace。它只识别有限的中英文 MovieLens 题材词；无法执行的限制会列在 `unparsed_constraints`，状态为 `partial`，不应当理解成 LLM Agent 的语义能力。工具失败时会标记 `fallback_used` 并使用训练期热度基线回退。
 
 > 一个项目，走通「深度学习 → Transformer → 推荐模型训练 → LLM 微调 → 量化部署 → Agent 应用 → 工程化落地」的完整链路。
 >
