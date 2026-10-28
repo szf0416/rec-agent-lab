@@ -49,6 +49,7 @@ class AgentResponse:
     fallback_used: bool
     preferences: Preferences
     latency_ms: float
+    model_usage: dict[str, int] | None = None
 
 
 class DeterministicAgent:
