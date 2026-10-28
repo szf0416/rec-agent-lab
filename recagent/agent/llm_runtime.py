@@ -208,6 +208,8 @@ class LLMRecommendationAgent:
                 if remaining <= 0:
                     raise ModelDecisionError("模型总时间预算耗尽")
                 turn: ChatTurn = self.client.complete(messages, TOOL_SCHEMAS, remaining)
+                if perf_counter() - start > self.total_timeout_s:
+                    raise ModelDecisionError("模型总时间预算耗尽")
                 for key, value in turn.usage.items():
                     if type(value) is int and value >= 0:
                         usage[key] = usage.get(key, 0) + value

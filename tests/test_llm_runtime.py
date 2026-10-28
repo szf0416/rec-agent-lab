@@ -1,6 +1,7 @@
 """模型工具循环必须真正路由工具，并约束输出证据。"""
 
 import json
+import time
 
 import pytest
 
@@ -119,3 +120,21 @@ def test_tool_budget_and_turn_budget_fall_back(rec_tools):
     result = LLMRecommendationAgent(rec_tools, client).run("科幻", user_id=1)
     assert result.fallback_used
     assert len([step for step in result.tool_trace if step.status == "ok"]) == 4
+
+
+def test_final_turn_after_total_deadline_falls_back(rec_tools):
+    class SlowFinalClient(ScriptedClient):
+        def complete(self, messages, tools, timeout_s):
+            if len(self.messages) == 2:
+                time.sleep(0.03)
+            return super().complete(messages, tools, timeout_s)
+
+    client = SlowFinalClient([
+        call("recall_candidates", {"genres": ["Sci-Fi"], "limit": 10}),
+        call("rank_candidates", {"candidate_ids": [2, 4], "top_k": 2}, "c2"),
+        ChatTurn('{"item_ids":[2,4]}', (), {}),
+    ])
+    result = LLMRecommendationAgent(rec_tools, client, total_timeout_s=0.02).run(
+        "科幻", user_id=1, top_k=2
+    )
+    assert result.fallback_used

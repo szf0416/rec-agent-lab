@@ -16,15 +16,31 @@ from recagent.agent.chat_client import (
 
 def test_client_sends_tools_and_parses_tool_call():
     payload = {
-        "choices": [{"message": {"content": None, "tool_calls": [
-            {"id": "call_1", "type": "function", "function": {"name": "recall_candidates", "arguments": '{"genres":["Sci-Fi"]}'}}
-        ]}}],
+        "choices": [
+            {
+                "message": {
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": "call_1",
+                            "type": "function",
+                            "function": {
+                                "name": "recall_candidates",
+                                "arguments": '{"genres":["Sci-Fi"]}',
+                            },
+                        }
+                    ],
+                }
+            }
+        ],
         "usage": {"prompt_tokens": 12, "completion_tokens": 8, "total_tokens": 20},
     }
     client = OpenAICompatibleClient(
         "http://127.0.0.1:11434/v1", "qwen2.5:1.5b", api_key="local-secret"
     )
-    with patch("urllib.request.urlopen", return_value=io.BytesIO(json.dumps(payload).encode())) as mock:
+    with patch(
+        "urllib.request.urlopen", return_value=io.BytesIO(json.dumps(payload).encode())
+    ) as mock:
         turn = client.complete([{"role": "user", "content": "科幻"}], [{"type": "function"}], 7.5)
     request = mock.call_args.args[0]
     body = json.loads(request.data)
