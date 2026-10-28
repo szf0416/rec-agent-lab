@@ -33,6 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import yaml
 
 from recagent.data import (
+    DatasetSplit,
     IntegrityError,
     NegativeSampler,
     build_candidate_pool,
@@ -121,6 +122,15 @@ def export_eval_negatives(negatives: dict[int, tuple[int, ...]], processed_dir: 
     target.write_text(json.dumps(payload), encoding="utf-8")
     logger.info("导出评测负样本 -> %s (%s 用户)", target.name, len(payload))
     return target
+
+
+def build_eval_exclusions(split: DatasetSplit) -> dict[int, set[int]]:
+    """评测负标签排除所有已知正反馈；这些信息不传入模型。"""
+    excluded: dict[int, set[int]] = {}
+    for interactions in (split.train, split.valid, split.test):
+        for interaction in interactions:
+            excluded.setdefault(interaction.user_id, set()).add(interaction.item_id)
+    return excluded
 
 
 def export_summary(summary: dict[str, Any], processed_dir: Path) -> Path:
@@ -245,7 +255,11 @@ def main(argv: list[str] | None = None) -> int:
 
     test_users = sorted({i.user_id for i in split.test})
     try:
-        eval_negatives = sampler.eval_negatives(test_users, num_neg=eval_num_neg)
+        eval_negatives = sampler.eval_negatives(
+            test_users,
+            num_neg=eval_num_neg,
+            exclude_by_user=build_eval_exclusions(split),
+        )
     except Exception as exc:  # noqa: BLE001
         logger.error(
             "评测负采样失败: %s\n提示: 池大小 %s 可能小于 eval_num_neg=%s",

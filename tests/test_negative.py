@@ -12,12 +12,13 @@ from collections import Counter
 import pytest
 
 from recagent.data.exceptions import ParseError
-from recagent.data.loading import Interaction, group_by_user
+from recagent.data.loading import DatasetSplit, Interaction, group_by_user
 from recagent.data.negative import (
     NegativeSampler,
     build_candidate_pool,
     item_frequencies,
 )
+from scripts.preprocess import build_eval_exclusions
 
 
 def make_train(users: int = 6, items: int | None = None, per_user: int = 4) -> list[Interaction]:
@@ -177,6 +178,15 @@ def test_eval_negatives_exclude_known_items_and_cache_by_exclusions() -> None:
     assert sampler.eval_negatives([1], num_neg=3, exclude_by_user={1: {1, 2}}) == first
     changed = sampler.eval_negatives([1], num_neg=3, exclude_by_user={1: {3, 4}})
     assert set(changed[1]) == {1, 2, 5}
+
+
+def test_eval_exclusions_include_all_splits() -> None:
+    split = DatasetSplit(
+        train=[Interaction(1, 1, 1), Interaction(2, 2, 2)],
+        valid=[Interaction(1, 3, 3)],
+        test=[Interaction(1, 4, 4), Interaction(2, 5, 5)],
+    )
+    assert build_eval_exclusions(split) == {1: {1, 3, 4}, 2: {2, 5}}
 
 
 # --------------------------------------------------------------------------
