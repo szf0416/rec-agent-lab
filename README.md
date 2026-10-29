@@ -1,228 +1,82 @@
-# RecAgent Lab · 从零构建推荐系统到 LLM 推荐 Agent
+# RecAgent Lab
 
-> **当前可运行版本**：训练期 Popularity + ItemCF 推荐基线、固定候选评测、确定性工具流程，以及本地 OpenAI 兼容模型的工具调用入口。本地模型需要另行启动；API 与对话评测继续按 [四至六周设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)推进。下面较长的阶段路线图描述后续目标，不代表功能均已交付。
+**用真实推荐工具驱动的本地电影推荐 Agent。** 用户用自然语言描述偏好，本地模型调度召回与排序；系统只接受训练期目录中的电影，并返回可检查的工具 trace。项目面向推荐系统与 Agent / 应用 AI 工程岗位。
 
-```bash
-# 首次使用先按下方“快速开始”准备 MovieLens-1M，并运行预处理。
-python scripts/preprocess.py --config configs/data/ml1m.yaml
-python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --user-id 6040 --genres Comedy --top-k 5
-# 不传 --user-id 时展示无历史用户的热度回退。
-python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --top-k 5
-python scripts/evaluate_baseline.py --processed-dir data/processed/ml1m --k 10
-python scripts/run_agent_demo.py --processed-dir data/processed/ml1m --user-id 6040 --query "想看科幻，不要恐怖" --top-k 3
-# 启动本地模型服务并拉取模型后运行；详见 docs/LOCAL-LLM.md。
-python scripts/run_local_llm_agent.py --processed-dir data/processed/ml1m --user-id 6040 --query "想看科幻，不要恐怖" --top-k 3
+> 当前可运行：MovieLens-1M 数据处理、Popularity / ItemCF 基线、固定候选评测、确定性工具流程、本地 Qwen 工具调用及失败回退。API 服务、跨查询对话评测和更复杂的推荐模型仍在计划中。
+
+## 系统如何工作
+
+```mermaid
+flowchart LR
+    U[自然语言需求] --> A[本地模型 Agent]
+    A --> T[受限工具调用]
+    T --> R[训练期召回与排序]
+    R --> V[候选 ID 与题材证据检查]
+    V --> O[推荐结果与工具 trace]
+    A -->|模型不可用或结果无依据| F[确定性回退]
+    F --> O
 ```
 
-该基线只读取 `interactions_train.csv` 与 `items.json`；输出电影必须在训练期出现。`--genres` 可重复传入，使用 MovieLens 原始英文题材名。当前脚本是确定性推荐，不调用 LLM。
-评测脚本使用每用户 1 个测试正样本和固定的 100 个负样本；其 NDCG/Recall 只代表这套采样候选的排序表现，结果见 [基线报告](reports/baseline-sampled-ml1m.md)。
-`run_agent_demo.py` 展示**确定性工具流程**，无 API 密钥也能运行，并返回偏好解析、推荐结果与逐步工具 trace。它只识别有限的中英文 MovieLens 题材词；无法执行的限制会列在 `unparsed_constraints`，状态为 `partial`，不应当理解成 LLM Agent 的语义能力。工具失败时会标记 `fallback_used` 并使用训练期热度基线回退。
-`run_local_llm_agent.py` 接入本机模型服务，真实执行受限的工具调用；[启动方法与输出判读](docs/LOCAL-LLM.md)写明了模型安装、服务地址和回退状态。该入口的离线自动测试不等于真实模型效果评测。
-
-> 一个项目，走通「深度学习 → Transformer → 推荐模型训练 → LLM 微调 → 量化部署 → Agent 应用 → 工程化落地」的完整链路。
->
-> 目标读者：我自己（面试官 / 面试官请看 [docs/RESUME.md](docs/RESUME.md)）。
-
----
-
-## 为什么做这个项目
-
-市面上大量「Agent 项目」是套壳 RAG 问答：调 API、连向量库、拼 prompt，**展示不出模型能力和工程深度**；
-而大量「推荐系统项目」停在论文复现：跑通一个 LightGCN，**没有任何线上工程和 LLM 能力**。
-
-这个项目刻意站在两者中间：**用一个真实可跑的推荐系统作为 Agent 的"手和脚"**，
-让 LLM Agent 去调度召回、排序、检索、重排等真实工具，而不是空谈。
-
-这样做的好处是，简历上可以同时讲两层深度：
-
-| 面试官关心 | 这个项目能给的证据 |
-| --- | --- |
-| 懂不懂深度学习底层 | 手写反向传播、手写 Multi-Head Attention，`from_scratch/` 下有对照实验 |
-| 会不会训模型 | SASRec / DIN 从零训练，有 loss 曲线、消融表、bad case 分析 |
-| 懂不懂 Transformer | 从零实现 Tiny GPT + 逐行对齐 HuggingFace 实现 |
-| 有没有大模型经验 | Qwen2.5 LoRA 微调成「推荐助手」，含数据构造、训练、评测全流程 |
-| 会不会部署 | 量化（int8/int4）+ vLLM/llama.cpp 推理服务 + FastAPI + Docker |
-| 会不会做 Agent | 自研 ReAct 循环 + LangGraph 编排 + 工具调用 + 记忆 + 评测 |
-| 工程素养 | 测试覆盖、CI、可复现实验、监控、消融实验设计 |
-| 业务理解 | 多路召回 → 粗排 → 精排 → 重排 的完整工业级链路 |
-
----
-
-## 五大能力线
-
-项目用 11 个月推进，每个阶段同时推进多条能力线，**任何时刻都不存在"只学不产出"的阶段**。
-
-```
-        M1        M2        M3        M4        M5        M6        M7        M8
-        ├─────────┼─────────┼─────────┼─────────┼─────────┼─────────┼─────────┤
-DL 基础  ████████
-Transformer      ████████
-推荐模型                  ████████████████
-LLM 微调                            ████████████
-部署工程                            ████████████████
-Agent 应用                                    ████████████████████
-工程化    ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████████████████████████████
-```
-
-| # | 能力线 | 关键产出 | 对应阶段 |
-| --- | --- | --- | --- |
-| 1 | **深度学习基础** | 手写线性/逻辑回归、MLP 反向传播；SASRec/DIN 训练与调参 | S1, S3 |
-| 2 | **Transformer** | 从零实现 MHA / Tiny GPT；对齐 HF 实现并可视化 attention | S2 |
-| 3 | **LLM 训练与微调** | Qwen2.5-1.5B/7B LoRA 微调成推荐助手；DPO 对齐实验 | S4 |
-| 4 | **部署与工程** | ONNX / int8 量化 / vLLM / llama.cpp；FastAPI 服务；Docker | S5 |
-| 5 | **Agent 应用** | ReAct 循环、工具注册、会话记忆、多轮澄清、LangGraph 编排 | S6 |
-| 6 | **工程化与协作** | 测试、CI、实验追踪、消融报告、代码评审流程 | 贯穿全程 |
-
----
-
-## 项目形态
-
-**一句话**：一个「对话式推荐 Agent」系统。用户用自然语言描述需求，Agent 自主调用推荐工具链完成推荐，并给出可解释的理由。
-
-```
-用户: "最近想看点烧脑的科幻，但不要太压抑，我上周刚看完《降临》"
-  │
-  ▼
-┌──────────────────────────────────────────────────────────────┐
-│                    推荐 Agent (LLM)                          │
-│  意图理解 → 偏好澄清 → 工具规划 → 结果重排 → 生成理由         │
-└──────────────────────────────────────────────────────────────┘
-  │ 调用工具                      ▲ 候选 + 特征
-  ▼                              │
-┌──────────────────────────────────────────────────────────────┐
-│ 工具层: search_item / get_user_profile / recall_by_vector    │
-│         rank_candidates / explain_recommendation / ...       │
-└──────────────────────────────────────────────────────────────┘
-  │
-  ▼
-┌──────────────────────────────────────────────────────────────┐
-│ 推荐引擎: 多路召回 → 粗排 → 精排(DIN) → 重排                  │
-│ 基线: Popularity / ItemCF / 双塔 / SASRec                    │
-└──────────────────────────────────────────────────────────────┘
-  │
-  ▼
-MovieLens-1M (离线, 模拟时间流) + Amazon Reviews (冷启动/迁移)
-```
-
-**核心研究问题（自问自答，也是面试抓手）**：
-
-1. 相比纯协同过滤，LLM Agent 在**冷启动**和**长尾**场景能提升多少？
-2. Agent 的"偏好澄清"轮次，对最终 NDCG 的边际收益是多少？
-3. 微调过的推荐助手 vs. 直接用通用大模型 prompt，差多少？
-4. 量化到 int4 后，推荐质量掉多少、延迟降多少？
-5. 多轮对话里的用户画像漂移，怎么用记忆机制处理？
-
----
-
-## 仓库结构
-
-```
-rec-agent-lab/
-├── README.md
-├── docs/
-│   ├── ROADMAP.md        # 11 个月五阶段路线图与验收标准
-│   ├── ARCHITECTURE.md   # 分层架构、模块接口、关键设计决策
-│   ├── REVIEW.md         # 代码评审流程与协作约定
-│   ├── DECISIONS.md      # 技术选型记录 (ADR)
-│   └── paper-notes/      # 论文精读笔记（LLM4Rec 方向）
-├── recagent/
-│   ├── data/             # 数据下载、预处理、时间流切分
-│   ├── features/         # 特征工程
-│   ├── models/           # 召回/排序模型
-│   ├── engine/           # 多路召回→排序→重排 编排
-│   ├── llm/              # 微调、推理、prompt 管理
-│   ├── agent/            # ReAct 循环、工具、记忆
-│   ├── eval/             # 离线评测、LLM-as-judge、消融
-│   └── serving/          # API 服务、监控
-├── from_scratch/         # 手写实现（DL 基础 / Transformer / Tiny GPT）
-├── configs/              # 实验配置 (hydra/yaml)
-├── scripts/              # 训练、评测、导出、部署脚本
-├── tests/                # 单元测试与集成测试
-├── notebooks/            # 探索性分析（不进 CI）
-└── reports/              # 消融实验报告、性能分析
-```
-
----
+模型选择工具与结果 ID；标题、题材和推荐理由来自训练期目录与排序结果。用户 ID 由请求固定，模型不能通过工具参数读取其他用户历史。
 
 ## 快速开始
 
-```bash
-# 1) 环境（二选一，详见 environment.yml 文件头）
-#    A. 复用已有 CUDA 环境，省去 2GB 的 torch 下载
-conda activate llm-lab && pip install -e ".[dev]"
-#    B. 新建独立环境（torch 需按 environment.yml 说明单独装）
-conda env create -f environment.yml && conda activate recagent
+在 Python 3.10+ 环境和仓库根目录执行：
 
-# 2) 环境自检：逐项确认依赖、CUDA、数据是否就绪
-python scripts/env_check.py
-
-# 3) 数据准备
-#    若本地已有 ML-1M，用 --local-source 跳过下载
-python scripts/download_data.py --dataset ml-1m --local-source <你已有的 ml-1m 目录>
+```powershell
+python -m pip install -e .
+python scripts/download_data.py --dataset ml-1m
 python scripts/preprocess.py --config configs/data/ml1m.yaml
-
-# 训练基线
-python scripts/train.py --config configs/model/sasrec_ml1m.yaml
-
-# 评测
-python scripts/evaluate.py --run-name sasrec_ml1m --split test
-
-# 起服务（阶段 5 之后可用）
-docker compose up -d
-curl -X POST localhost:8000/recommend -H 'Content-Type: application/json' \
-  -d '{"user_id": 1, "query": "想看点烧脑科幻"}'
 ```
 
----
+已有 MovieLens-1M 数据时，可用 `python scripts/download_data.py --dataset ml-1m --local-source <ml-1m目录>`。原始数据和处理结果保存在 `data/`，不进入 Git。
 
-## 文档导航
+无需模型服务即可运行基线和确定性 Agent：
 
-| 文档 | 内容 |
-| --- | --- |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | **先看这个**：11 个月五阶段计划、每周任务、验收标准 |
-| [docs/SCHEDULE.md](docs/SCHEDULE.md) | 40 周执行日历、关键日期、缓冲期安排 |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | 分层架构、模块接口契约、关键设计决策 |
-| [docs/REVIEW.md](docs/REVIEW.md) | 代码评审流程、Definition of Done、协作约定 |
-| [docs/DATA-PIPELINE.md](docs/DATA-PIPELINE.md) | **数据管线导读**：切分与负采样为什么这么设计、防泄漏在哪 |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | 技术选型记录及理由 |
-| [docs/RESUME.md](docs/RESUME.md) | 简历条目模板、讲稿框架、高频追问清单 |
-| [docs/PUSH.md](docs/PUSH.md) | 推送到 GitHub 的操作手册与排障 |
-| [docs/troubleshooting.md](docs/troubleshooting.md) | **排查手册**：loss 不降的 5 种原因、诊断三步法 |
-| [docs/paper-notes/s1-dl-basics.md](docs/paper-notes/s1-dl-basics.md) | S1 复盘：验收自查、两个必答问题、踩坑汇总 |
+```powershell
+python scripts/recommend_baseline.py --processed-dir data/processed/ml1m --user-id 6040 --top-k 3
+python scripts/evaluate_baseline.py --processed-dir data/processed/ml1m --k 10
+python scripts/run_agent_demo.py --processed-dir data/processed/ml1m --user-id 6040 --query "想看科幻，不要恐怖" --top-k 3
+```
 
----
+真实模型演示需先按[本地模型指南](docs/LOCAL-LLM.md)启动 Ollama 并准备支持工具调用的模型：
 
-## 进度
+```powershell
+# 默认模型为 qwen2.5:1.5b；使用本机 GGUF 导入模型时，先设置：
+# $env:RECAGENT_LLM_MODEL = "recagent-qwen2.5"
+python scripts/run_local_llm_agent.py --processed-dir data/processed/ml1m --user-id 6040 --query "想看科幻，不要恐怖" --top-k 3
+```
 
-| 阶段 | 内容 | 状态 |
-| --- | --- | --- |
-| S0 | 环境与仓库骨架 | ✅ |
-| S1 | 深度学习基础 + 手写训练循环 | ✅ |
-| S2 | Transformer 从零实现 | 🚧 下一步 |
-| S3 | 推荐模型（召回+排序） | ⬜ |
-| S4 | LLM 微调 | ⬜ |
-| S5 | 部署与量化 | ⬜ |
-| S6 | 推荐 Agent | ⬜ |
-| S7 | 消融、报告、简历包装 | ⬜ |
+输出中 `fallback_used=false` 且 `tool_trace` 包含 `recall_candidates`、`rank_candidates`，表示模型完成了受校验的工具流程；`fallback_used=true` 表示运行时使用了确定性推荐结果。
 
-### S1 完成情况
+## 已验证的结果
 
-**验收标准逐条达标**（详见 [docs/paper-notes/s1-dl-basics.md](docs/paper-notes/s1-dl-basics.md)）：
+固定候选离线评测纳入 1,208 名用户，每人使用 1 个测试正样本和 100 个冻结负样本。下列指标只反映该采样候选的排序，不等同于全库召回或在线效果。
 
-- ✅ 手推两层 MLP 反向传播，与 PyTorch 误差 **2.78e-17**（`tests/test_gradient_check.py`，18 个测试进 CI）
-- ✅ 数值梯度独立验证；不可导点失效边界已量化（**4.50e-03 vs 5.21e-12**）
-- ✅ 能回答 Adam 泛化问题（含 **Adam+L2 压死 embedding** 的实测：同 wd 下 0.0468 vs 0.1705）
-- ✅ 能回答 BatchNorm 训练/推理差异（`tests/test_batchnorm.py`，8 个测试进 CI）
-- ✅ loss 不降的 5 种原因与排查手段（[docs/troubleshooting.md](docs/troubleshooting.md)）
-- ✅ 训练循环通用：三个实验（端到端验证 / 正则化 / 优化器）共用同一个 `Trainer`，未改接口
+| 模型 | Recall@10 | NDCG@10 | 覆盖率 |
+| --- | ---: | ---: | ---: |
+| Popularity | 0.2649 | 0.1403 | 0.1040 |
+| ItemCF | 0.2053 | 0.1165 | 0.1537 |
 
-| 指标 | 值 |
-| --- | --- |
-| 测试 | **227 个**，全部秒级 |
-| 实验报告 | 3 份（端到端验证 / 正则化 / 优化器）|
-| 实验配置 | 24 组（W3 九组 + W4 十五组）|
-| 面试材料 | [速查卡](docs/interview/S1-cheatsheet.md) + [14 题详解](docs/interview/S1-qa.md) |
+ItemCF 在此协议下覆盖更多电影，但准确率低于热度基线。协议与负样本修正见[基线报告](reports/baseline-sampled-ml1m.md)和[负样本审计](reports/eval-negative-collision-audit.md)。
 
-## License
+本机使用 Qwen2.5-1.5B GGUF + Ollama，对同一条 MovieLens 查询连续运行 4 次，均完成召回和排序且未回退；Agent 内部延迟约 2.5–2.8 秒。这是[冒烟验证](reports/local-llm-smoke-2026-10-29.md)，不能据此推断跨查询成功率或推荐质量提升。
 
-MIT
+## 工程边界
+
+- 只读工具：`search_movies`、`get_user_history`、`recall_candidates`、`rank_candidates`。
+- 最多 4 次工具调用、6 轮模型请求、60 秒总预算；最终电影 ID 必须来自已排序结果。
+- 本地模型连接仅接受回环地址；密钥和模型原始回复不写入 trace。
+- 无法由目录字段证明的约束留在 `unparsed_constraints`，不会伪称已满足。
+
+核心代码在 [`recagent/engine/`](recagent/engine/)（推荐基线）、[`recagent/agent/`](recagent/agent/)（工具与模型循环）、[`recagent/eval/`](recagent/eval/)（离线评测）。运行 `python -m pytest -q` 可执行自动测试。
+
+## 文档与下一步
+
+- [本地模型安装与演示](docs/LOCAL-LLM.md)
+- [数据切分与防泄漏](docs/DATA-PIPELINE.md)
+- [项目架构](docs/ARCHITECTURE.md)
+- [当前可用于简历的事实与讲解提纲](docs/RESUME.md)
+- [四至六周 MVP 设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)与[长期学习路线](docs/ROADMAP.md)
+
+下一步是构建覆盖不同用户、偏好和失败场景的对话评测集，再加入 API 演示入口。跨查询成功率、推荐质量和端到端延迟有实测报告后再写入项目结论。
