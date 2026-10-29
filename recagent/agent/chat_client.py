@@ -78,6 +78,7 @@ class OpenAICompatibleClient:
             "messages": messages,
             "tools": tools,
             "parallel_tool_calls": False,
+            "tool_choice": "required" if tools else "none",
             "temperature": 0,
             "max_tokens": self.max_tokens,
         }

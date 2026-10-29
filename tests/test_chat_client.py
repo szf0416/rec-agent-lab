@@ -47,11 +47,22 @@ def test_client_sends_tools_and_parses_tool_call():
     assert request.full_url == "http://127.0.0.1:11434/v1/chat/completions"
     assert body["model"] == "qwen2.5:1.5b"
     assert body["parallel_tool_calls"] is False
+    assert body["tool_choice"] == "required"
     assert body["tools"] == [{"type": "function"}]
     assert mock.call_args.kwargs["timeout"] == 7.5
     assert turn.tool_calls[0].name == "recall_candidates"
     assert turn.tool_calls[0].arguments == '{"genres":["Sci-Fi"]}'
     assert turn.usage["total_tokens"] == 20
+
+
+def test_client_uses_no_tool_choice_for_final_turn():
+    payload = {"choices": [{"message": {"content": '{"item_ids":[2]}'}}]}
+    client = OpenAICompatibleClient("http://localhost:11434/v1", "model")
+    with patch(
+        "urllib.request.urlopen", return_value=io.BytesIO(json.dumps(payload).encode())
+    ) as mock:
+        client.complete([{"role": "user", "content": "final"}], [], 2)
+    assert json.loads(mock.call_args.args[0].data)["tool_choice"] == "none"
 
 
 @pytest.mark.parametrize("bad_url", ["https://example.com/v1", "http://192.168.1.2:8000/v1"])

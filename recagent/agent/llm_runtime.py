@@ -168,7 +168,7 @@ class LLMRecommendationAgent:
         candidate_ids = tuple(raw_ids)
         if not set(candidate_ids).issubset(allowed_ids):
             raise ModelDecisionError("排序候选超出召回范围")
-        limit = _bounded_int(args.get("top_k", top_k), top_k)
+        limit = _bounded_int(args.get("top_k", top_k), 20)
         return self.tools.rank_candidates(user_id, candidate_ids, allowed_ids, limit), {
             "user_id": user_id,
             "candidate_ids": candidate_ids,
@@ -202,12 +202,36 @@ class LLMRecommendationAgent:
         allowed_ids: frozenset[int] = frozenset()
         ranked: dict[int, Recommendation] = {}
         seen_call_ids: set[str] = set()
+        repair_count = 0
         try:
             for _ in range(self.max_turns):
                 remaining = self.total_timeout_s - (perf_counter() - start)
                 if remaining <= 0:
                     raise ModelDecisionError("模型总时间预算耗尽")
-                turn: ChatTurn = self.client.complete(messages, TOOL_SCHEMAS, remaining)
+                if ranked:
+                    offered = []
+                elif allowed_ids:
+                    offered = [
+                        schema
+                        for schema in TOOL_SCHEMAS
+                        if schema["function"]["name"] == "rank_candidates"
+                    ]
+                elif trace or prefs.genres or prefs.exclude_genres:
+                    offered = [
+                        schema
+                        for schema in TOOL_SCHEMAS
+                        if schema["function"]["name"] == "recall_candidates"
+                    ]
+                else:
+                    initial_names = {"search_movies", "recall_candidates"}
+                    if user_id is not None:
+                        initial_names.add("get_user_history")
+                    offered = [
+                        schema
+                        for schema in TOOL_SCHEMAS
+                        if schema["function"]["name"] in initial_names
+                    ]
+                turn: ChatTurn = self.client.complete(messages, offered, remaining)
                 if perf_counter() - start > self.total_timeout_s:
                     raise ModelDecisionError("模型总时间预算耗尽")
                 for key, value in turn.usage.items():
@@ -217,6 +241,8 @@ class LLMRecommendationAgent:
                     if len(turn.tool_calls) != 1 or len(trace) >= self.max_tool_calls:
                         raise ModelDecisionError("模型工具调用次数或并行调用超限")
                     call = turn.tool_calls[0]
+                    if call.name not in {schema["function"]["name"] for schema in offered}:
+                        raise ModelDecisionError("模型调用了当前阶段未授权的工具")
                     if call.id in seen_call_ids:
                         raise ModelDecisionError("重复工具调用 ID")
                     seen_call_ids.add(call.id)
@@ -225,6 +251,8 @@ class LLMRecommendationAgent:
                         call, user_id, top_k, prefs.genres, prefs.exclude_genres, allowed_ids
                     )
                     if call.name == "recall_candidates":
+                        if not result:
+                            raise ModelDecisionError("召回结果为空")
                         allowed_ids = frozenset(item.item_id for item in result)
                         ranked = {}
                     if call.name == "rank_candidates":
@@ -267,6 +295,29 @@ class LLMRecommendationAgent:
                             "tool_call_id": call.id,
                             "content": json.dumps(
                                 [asdict(item) for item in result], ensure_ascii=False
+                            ),
+                        }
+                    )
+                    if call.name == "rank_candidates":
+                        messages.append(
+                            {
+                                "role": "user",
+                                "content": (
+                                    f'只输出 JSON {{"item_ids":[...]}}，最多 {top_k} 个；'
+                                    f"ID 只能从已排序结果 {list(ranked)} 中选。"
+                                ),
+                            }
+                        )
+                    continue
+                if not ranked and repair_count < 1:
+                    repair_count += 1
+                    required_tool = "rank_candidates" if allowed_ids else "recall_candidates"
+                    messages.append({"role": "assistant", "content": turn.content or ""})
+                    messages.append(
+                        {
+                            "role": "user",
+                            "content": (
+                                f"当前步骤必须调用 {required_tool} 工具。不要直接回答或给出电影 ID。"
                             ),
                         }
                     )

@@ -66,6 +66,7 @@ def test_llm_routes_recall_and_rank_with_grounded_output(rec_tools):
     assert "fabricated" not in result.items[0].reason
     assert [step.name for step in result.tool_trace] == ["recall_candidates", "rank_candidates"]
     assert result.model_usage["total_tokens"] == 13
+    assert [tool["function"]["name"] for tool in client.tools[0]] == ["recall_candidates"]
     assert client.messages[1][-1]["role"] == "tool"
     assert client.messages[1][-1]["tool_call_id"] == "c1"
     assert client.messages[1][-2]["tool_calls"][0]["function"]["name"] == "recall_candidates"
@@ -119,7 +120,52 @@ def test_tool_budget_and_turn_budget_fall_back(rec_tools):
     client = ScriptedClient([call("search_movies", {"query": "Sci-Fi", "limit": 1})] * 5)
     result = LLMRecommendationAgent(rec_tools, client).run("科幻", user_id=1)
     assert result.fallback_used
-    assert len([step for step in result.tool_trace if step.status == "ok"]) == 4
+    assert len([step for step in result.tool_trace if step.status == "ok"]) <= 4
+
+
+def test_tool_phases_require_recall_then_rank(rec_tools):
+    client = ScriptedClient(
+        [
+            call("search_movies", {"query": "Sci-Fi", "limit": 2}),
+            call("recall_candidates", {"genres": ["Sci-Fi"], "limit": 10}, "c2"),
+            call("rank_candidates", {"candidate_ids": [2, 4], "top_k": 2}, "c3"),
+            ChatTurn('{"item_ids":[2,4]}', (), {}),
+        ]
+    )
+    result = LLMRecommendationAgent(rec_tools, client).run("推荐电影", user_id=1, top_k=2)
+    assert result.status == "ok"
+    tool_names = [[tool["function"]["name"] for tool in offered] for offered in client.tools]
+    assert "search_movies" in tool_names[0]
+    assert tool_names[1] == ["recall_candidates"]
+    assert tool_names[2] == ["rank_candidates"]
+    assert tool_names[3] == []
+
+
+def test_model_text_before_recall_gets_one_repair_prompt(rec_tools):
+    client = ScriptedClient(
+        [
+            ChatTurn("可以看看科幻电影", (), {}),
+            call("recall_candidates", {"genres": ["Sci-Fi"], "limit": 10}),
+            call("rank_candidates", {"candidate_ids": [2, 4], "top_k": 2}, "c2"),
+            ChatTurn('{"item_ids":[2,4]}', (), {}),
+        ]
+    )
+    result = LLMRecommendationAgent(rec_tools, client).run("科幻", user_id=1, top_k=2)
+    assert result.status == "ok"
+    assert "recall_candidates" in client.messages[1][-1]["content"]
+
+
+def test_rank_pool_may_exceed_final_top_k(rec_tools):
+    client = ScriptedClient(
+        [
+            call("recall_candidates", {"genres": ["Sci-Fi"], "limit": 10}),
+            call("rank_candidates", {"candidate_ids": [2, 4], "top_k": 2}, "c2"),
+            ChatTurn('{"item_ids":[2]}', (), {}),
+        ]
+    )
+    result = LLMRecommendationAgent(rec_tools, client).run("科幻", user_id=1, top_k=1)
+    assert result.status == "ok"
+    assert [item.item_id for item in result.items] == [2]
 
 
 def test_final_turn_after_total_deadline_falls_back(rec_tools):
@@ -129,11 +175,13 @@ def test_final_turn_after_total_deadline_falls_back(rec_tools):
                 time.sleep(0.03)
             return super().complete(messages, tools, timeout_s)
 
-    client = SlowFinalClient([
-        call("recall_candidates", {"genres": ["Sci-Fi"], "limit": 10}),
-        call("rank_candidates", {"candidate_ids": [2, 4], "top_k": 2}, "c2"),
-        ChatTurn('{"item_ids":[2,4]}', (), {}),
-    ])
+    client = SlowFinalClient(
+        [
+            call("recall_candidates", {"genres": ["Sci-Fi"], "limit": 10}),
+            call("rank_candidates", {"candidate_ids": [2, 4], "top_k": 2}, "c2"),
+            ChatTurn('{"item_ids":[2,4]}', (), {}),
+        ]
+    )
     result = LLMRecommendationAgent(rec_tools, client, total_timeout_s=0.02).run(
         "科幻", user_id=1, top_k=2
     )

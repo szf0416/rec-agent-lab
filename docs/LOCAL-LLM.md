@@ -20,6 +20,8 @@
 
    如果 Ollama 没有自动启动，先执行 `ollama serve` 并保持该终端运行。演示结束后可在服务终端按 Ctrl+C 结束手动启动的服务。
 
+如果 `ollama pull` 的文件分发地址在当前网络下不可达，可以从 [Qwen 官方 GGUF 仓库](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/tree/main)下载 `qwen2.5-1.5b-instruct-q4_k_m.gguf`，放在 `data/models/`。在该目录创建 `Modelfile`，内容为 `FROM ./qwen2.5-1.5b-instruct-q4_k_m.gguf` 和 `PARAMETER num_ctx 4096` 两行，然后运行 `ollama create recagent-qwen2.5 -f data/models/Modelfile`。执行演示前设置 `$env:RECAGENT_LLM_MODEL = "recagent-qwen2.5"`。这是 [Ollama 官方 GGUF 导入方式](https://docs.ollama.com/import)。模型文件在 `data/` 下，不进入 Git。
+
 ## 使用其他本机服务
 
 只要实现 OpenAI Chat Completions 的工具调用协议，即可通过环境变量切换：
@@ -44,4 +46,4 @@ python scripts/run_local_llm_agent.py --query "想看喜剧" --top-k 3
 
 ## 已验证范围
 
-自动测试使用脚本化客户端和模拟 HTTP 响应，覆盖工具消息回放、越权参数、虚构 ID、预算超限、无服务回退与 CLI JSON 输出。它验证的是实现逻辑，不代表 `qwen2.5:1.5b` 的实际工具调用成功率或推荐质量。完成本机实测后，应记录模型版本、服务版本、请求示例、成功率、延迟与失败案例，再用于简历。
+自动测试使用脚本化客户端和模拟 HTTP 响应，覆盖工具消息回放、越权参数、虚构 ID、预算超限、无服务回退与 CLI JSON 输出。真实本机请求见 [冒烟报告](../reports/local-llm-smoke-2026-10-29.md)。同一查询的少量重复运行仅证明演示路径可通，不代表广泛的工具调用成功率或推荐质量。
