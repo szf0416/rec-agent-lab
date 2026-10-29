@@ -376,3 +376,13 @@ ADR-008 规定：样板工程可由 AI 代写，**算法与正确性逻辑（切
 ## ADR-template 位置说明
 
 新增 ADR 请复制 [ADR-template.md](ADR-template.md) 的内容追加到本文件末尾。
+
+---
+
+## ADR-API-001：独立安装本机演示 API
+
+- **日期**：2026-10-29
+- **状态**：已采纳
+- **背景**：第四周需要可复制的 HTTP 演示，但现有 `serve` extra 同时拉取 ONNX 和监控依赖，超出本机演示需求。
+- **决策**：新增轻量 `api` extra（FastAPI、Uvicorn、HTTPX）；CI 安装它以验证接口。`POST /recommend` 复用已有 Agent，`mode=baseline` 不依赖 Ollama，`mode=llm` 沿用模型失败回退。默认仅绑定 `127.0.0.1`。
+- **后果**：访客能查看统一 JSON 与 trace；公网部署仍需认证和并发治理，当前服务定位本机演示。

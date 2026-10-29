@@ -2,7 +2,7 @@
 
 **用真实推荐工具驱动的本地电影推荐 Agent。** 用户用自然语言描述偏好，本地模型调度召回与排序；系统只接受训练期目录中的电影，并返回可检查的工具 trace。项目面向推荐系统与 Agent / 应用 AI 工程岗位。
 
-> 当前可运行：MovieLens-1M 数据处理、Popularity / ItemCF 基线、固定候选评测、确定性工具流程、本地 Qwen 工具调用及失败回退。API 服务、跨查询对话评测和更复杂的推荐模型仍在计划中。
+> 当前可运行：MovieLens-1M 数据处理、Popularity / ItemCF 基线、固定候选评测、确定性工具流程、本地 Qwen 工具调用及失败回退、本机 HTTP API。更复杂的推荐模型仍在计划中。
 
 ## 系统如何工作
 
@@ -49,6 +49,24 @@ python scripts/run_local_llm_agent.py --processed-dir data/processed/ml1m --user
 
 输出中 `fallback_used=false` 且 `tool_trace` 包含 `recall_candidates`、`rank_candidates`，表示模型完成了受校验的工具流程；`fallback_used=true` 表示运行时使用了确定性推荐结果。
 
+### HTTP 演示
+
+API 依赖单独安装，不需要下载部署或训练依赖：
+
+```powershell
+python -m pip install -e ".[api]"
+python scripts/serve_api.py --processed-dir data/processed/ml1m --port 8000
+```
+
+另开一个 PowerShell 窗口，请求确定性流程：
+
+```powershell
+$body = @{ query = "想看科幻，不要恐怖"; user_id = 6040; top_k = 3; mode = "baseline" } | ConvertTo-Json
+Invoke-RestMethod -Uri http://127.0.0.1:8000/recommend -Method Post -ContentType "application/json; charset=utf-8" -Body ([Text.Encoding]::UTF8.GetBytes($body)) | ConvertTo-Json -Depth 10
+```
+
+Ollama 启动后把 `mode` 改为 `"llm"` 即可请求本地模型。服务读取与命令行演示相同的 `RECAGENT_LLM_BASE_URL`（默认 `http://127.0.0.1:11434/v1`）、`RECAGENT_LLM_MODEL`（默认 `qwen2.5:1.5b`）和 `RECAGENT_LLM_API_KEY` 环境变量；改动变量后重启服务。`GET /health` 检查目录已加载，`/docs` 查看交互式接口文档。`mode="baseline"` 的响应会如实写作 `mode="deterministic"`；`mode="llm"` 时仍需查看 `fallback_used`，不能只看 `mode` 判断模型是否完成。输入错误返回 422；内部错误返回不含路径或堆栈的 500 JSON。服务默认只监听本机回环地址，没有用户认证，不用于公网部署。
+
 ## 已验证的结果
 
 固定候选离线评测纳入 1,208 名用户，每人使用 1 个测试正样本和 100 个冻结负样本。下列指标只反映该采样候选的排序，不等同于全库召回或在线效果。
@@ -86,9 +104,10 @@ python scripts/evaluate_dialogue_agent.py --mode llm --output reports/dialogue-l
 - [本地模型安装与演示](docs/LOCAL-LLM.md)
 - [冻结对话任务与逐条评测](reports/dialogue-ml1m-2026-10-29.md)
 - [Ollama 默认 Qwen 的工具调用兼容验证](reports/ollama-default-compatibility-2026-10-29.md)
+- [本机 HTTP API 冒烟验证](reports/api-smoke-2026-10-29.md)
 - [数据切分与防泄漏](docs/DATA-PIPELINE.md)
 - [项目架构](docs/ARCHITECTURE.md)
 - [当前可用于简历的事实与讲解提纲](docs/RESUME.md)
 - [四至六周 MVP 设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)与[长期学习路线](docs/ROADMAP.md)
 
-下一步是针对模型工具协议的失败案例做对照实验，并加入 API 演示入口。推荐质量和端到端延迟需要独立协议与实测后再写入项目结论。
+下一步是针对模型工具协议的失败案例做对照实验，并补轻量交互页面与端到端评测。推荐质量和端到端延迟需要独立协议与实测后再写入项目结论。
