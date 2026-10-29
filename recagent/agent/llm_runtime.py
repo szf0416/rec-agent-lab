@@ -88,6 +88,26 @@ def _genres(value: Any, allowed: frozenset[str]) -> tuple[str, ...]:
     return tuple(sorted(set(value)))
 
 
+def _normalize_text_tool_call(turn: ChatTurn, offered: list[dict[str, Any]]) -> ChatTurn:
+    """兼容将函数调用写在正文 JSON 中的本地模型，仍由运行时校验权限。"""
+    if turn.tool_calls or not turn.content or not offered:
+        return turn
+    try:
+        envelope = json.loads(turn.content)
+    except ValueError:
+        return turn
+    if not isinstance(envelope, dict) or set(envelope) != {"name", "arguments"}:
+        return turn
+    name = envelope["name"]
+    arguments = envelope["arguments"]
+    if not isinstance(name, str) or name not in {schema["function"]["name"] for schema in offered}:
+        raise ModelDecisionError("正文工具调用未获当前阶段授权")
+    if not isinstance(arguments, dict):
+        raise ModelDecisionError("正文工具参数必须是对象")
+    call = ToolCall("text_" + uuid4().hex, name, json.dumps(arguments, ensure_ascii=False))
+    return ChatTurn(None, (call,), turn.usage)
+
+
 class LLMRecommendationAgent:
     def __init__(
         self,
@@ -234,6 +254,7 @@ class LLMRecommendationAgent:
                 turn: ChatTurn = self.client.complete(messages, offered, remaining)
                 if perf_counter() - start > self.total_timeout_s:
                     raise ModelDecisionError("模型总时间预算耗尽")
+                turn = _normalize_text_tool_call(turn, offered)
                 for key, value in turn.usage.items():
                     if type(value) is int and value >= 0:
                         usage[key] = usage.get(key, 0) + value

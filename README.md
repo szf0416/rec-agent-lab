@@ -62,6 +62,8 @@ ItemCF 在此协议下覆盖更多电影，但准确率低于热度基线。协�
 
 本机使用 Qwen2.5-1.5B GGUF + Ollama，对同一条 MovieLens 查询连续运行 4 次，均完成召回和排序且未回退；Agent 内部延迟约 2.5–2.8 秒。这是[冒烟验证](reports/local-llm-smoke-2026-10-29.md)。进一步在[30 条冻结对话任务](reports/dialogue-ml1m-2026-10-29.md)上评测，最终结果经回退后全部满足约束，但模型在 20 条普通任务中仅直接完成 3 条。项目公开这项局限，不把回退后的 100% 最终成功率当作模型能力。
 
+Ollama 默认 `qwen2.5:1.5b` 的正文 JSON 工具调用已加入严格兼容处理；但它在同一冻结任务集上的直接完成率为 0/20，详见[兼容报告](reports/ollama-default-compatibility-2026-10-29.md)。默认模型可用于验证单条演示，跨查询结果须看回退状态。
+
 复现对话评测：
 
 ```powershell
@@ -83,6 +85,7 @@ python scripts/evaluate_dialogue_agent.py --mode llm --output reports/dialogue-l
 
 - [本地模型安装与演示](docs/LOCAL-LLM.md)
 - [冻结对话任务与逐条评测](reports/dialogue-ml1m-2026-10-29.md)
+- [Ollama 默认 Qwen 的工具调用兼容验证](reports/ollama-default-compatibility-2026-10-29.md)
 - [数据切分与防泄漏](docs/DATA-PIPELINE.md)
 - [项目架构](docs/ARCHITECTURE.md)
 - [当前可用于简历的事实与讲解提纲](docs/RESUME.md)

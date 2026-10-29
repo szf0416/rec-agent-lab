@@ -47,3 +47,5 @@ python scripts/run_local_llm_agent.py --query "想看喜剧" --top-k 3
 ## 已验证范围
 
 自动测试使用脚本化客户端和模拟 HTTP 响应，覆盖工具消息回放、越权参数、虚构 ID、预算超限、无服务回退与 CLI JSON 输出。真实本机请求见 [冒烟报告](../reports/local-llm-smoke-2026-10-29.md)。同一查询的少量重复运行仅证明演示路径可通，不代表广泛的工具调用成功率或推荐质量。
+
+Ollama 默认 `qwen2.5:1.5b` 可能把工具调用放在正文 JSON 中；当前运行时会严格校验后转换该格式。[兼容验证](../reports/ollama-default-compatibility-2026-10-29.md)记录了同一查询的成功复测，也记录了 30 条不同任务中模型直接完成率仍低的事实。用于现场演示时，请先检查 `fallback_used`，不要仅凭 `mode=llm` 判断模型完成了工具调用。

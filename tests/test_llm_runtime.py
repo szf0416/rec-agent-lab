@@ -168,6 +168,45 @@ def test_rank_pool_may_exceed_final_top_k(rec_tools):
     assert [item.item_id for item in result.items] == [2]
 
 
+def test_plain_json_tool_envelopes_follow_the_same_tool_checks(rec_tools):
+    client = ScriptedClient(
+        [
+            ChatTurn(
+                '{"name":"recall_candidates","arguments":{"genres":["Sci-Fi"],"limit":10}}', (), {}
+            ),
+            ChatTurn(
+                '{"name":"rank_candidates","arguments":{"candidate_ids":[2,4],"top_k":2}}', (), {}
+            ),
+            ChatTurn('{"item_ids":[2,4]}', (), {}),
+        ]
+    )
+    result = LLMRecommendationAgent(rec_tools, client).run("科幻", user_id=1, top_k=2)
+    assert result.status == "ok"
+    assert not result.fallback_used
+    assert [step.name for step in result.tool_trace] == ["recall_candidates", "rank_candidates"]
+    assert client.messages[1][-1]["role"] == "tool"
+
+
+def test_plain_json_cannot_call_unoffered_tool(rec_tools):
+    response = ChatTurn('{"name":"rank_candidates","arguments":{"candidate_ids":[2]}}', (), {})
+    result = LLMRecommendationAgent(rec_tools, ScriptedClient([response, response])).run(
+        "科幻", user_id=1
+    )
+    assert result.fallback_used
+    assert result.tool_trace[0].name == "llm_validation"
+
+
+def test_plain_json_tool_call_cannot_override_user_id(rec_tools):
+    response = ChatTurn(
+        '{"name":"recall_candidates","arguments":{"genres":["Sci-Fi"],"user_id":2}}',
+        (),
+        {},
+    )
+    result = LLMRecommendationAgent(rec_tools, ScriptedClient([response])).run("科幻", user_id=1)
+    assert result.fallback_used
+    assert result.tool_trace[0].name == "llm_validation"
+
+
 def test_final_turn_after_total_deadline_falls_back(rec_tools):
     class SlowFinalClient(ScriptedClient):
         def complete(self, messages, tools, timeout_s):
