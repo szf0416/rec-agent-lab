@@ -1,0 +1,2992 @@
+{
+  "protocol": "frozen_dialogue_v1",
+  "case_set_sha256": "96815cb2d1476ae7fa3fcc0f560c61e8ff641b685e4f42bf9fcaf68f74758531",
+  "mode": "llm",
+  "model": "recagent-qwen2.5",
+  "summary": {
+    "total": 30,
+    "constraint_pass_rate": 1.0,
+    "grounding_pass_rate": 1.0,
+    "preference_parse_pass_rate": 1.0,
+    "task_success_rate": 1.0,
+    "standard_direct_success_rate": 0.15,
+    "fallback_rate": 0.9,
+    "fallback_causes": {
+      "model_protocol_after_recall": 17,
+      "model_protocol_before_recall": 5,
+      "injected_rank_failure": 5
+    },
+    "mean_tool_calls": 3.2,
+    "p50_latency_ms": 1122.9190500162076,
+    "p95_latency_ms": 2370.3887500189007,
+    "by_category": {
+      "cold_start": {
+        "total": 5,
+        "task_success_rate": 1.0,
+        "fallback_rate": 1.0
+      },
+      "exclusion": {
+        "total": 5,
+        "task_success_rate": 1.0,
+        "fallback_rate": 0.8
+      },
+      "history": {
+        "total": 5,
+        "task_success_rate": 1.0,
+        "fallback_rate": 0.8
+      },
+      "no_match": {
+        "total": 5,
+        "task_success_rate": 1.0,
+        "fallback_rate": 1.0
+      },
+      "preference": {
+        "total": 5,
+        "task_success_rate": 1.0,
+        "fallback_rate": 0.8
+      },
+      "tool_fault": {
+        "total": 5,
+        "task_success_rate": 1.0,
+        "fallback_rate": 1.0
+      }
+    },
+    "failed_ids": []
+  },
+  "cases": [
+    {
+      "id": "preference_1",
+      "category": "preference",
+      "query": "科幻",
+      "user_id": 1,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        260,
+        1196,
+        1210
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1262.167299981229,
+      "model_usage": {
+        "prompt_tokens": 2457,
+        "completion_tokens": 179,
+        "total_tokens": 2636
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 3.340700000990182,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 1,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002600019797682762,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 3.2514999620616436,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 1,
+            "candidate_ids": [
+              260,
+              1196,
+              1210,
+              589,
+              480,
+              1270,
+              2571,
+              1580,
+              1097,
+              2628,
+              1240,
+              1214,
+              2916,
+              1200,
+              541,
+              780,
+              1127,
+              3175,
+              924,
+              32
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.03759999526664615,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "preference_2",
+      "category": "preference",
+      "query": "喜剧",
+      "user_id": 2,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1270,
+        1580
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1083.2697000005282,
+      "model_usage": {
+        "prompt_tokens": 2298,
+        "completion_tokens": 158,
+        "total_tokens": 2456
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 6.1308000003919005,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 2,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002900022082030773,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 5.720200017094612,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 2,
+            "candidate_ids": [
+              2858,
+              1270,
+              1580,
+              2396,
+              1197,
+              2997,
+              1265,
+              2716,
+              356,
+              1,
+              1259,
+              34,
+              3175,
+              2355,
+              2791,
+              2000,
+              1136,
+              1968,
+              2599,
+              3114
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.041899969801306725,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "preference_3",
+      "category": "preference",
+      "query": "动作",
+      "user_id": 6040,
+      "mode": "llm",
+      "status": "ok",
+      "item_ids": [
+        1197,
+        2000,
+        2406
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": false,
+      "fallback_cause": null,
+      "tool_calls": 2,
+      "latency_ms": 2280.92300001299,
+      "model_usage": {
+        "prompt_tokens": 4086,
+        "completion_tokens": 179,
+        "total_tokens": 4265
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "genres": [
+              "Action"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 1030.2908000303432,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "candidate_ids": [
+              1197,
+              2571,
+              1580,
+              1387,
+              457,
+              480,
+              2000,
+              2406,
+              110,
+              2194
+            ],
+            "top_k": 10
+          },
+          "status": "ok",
+          "duration_ms": 5.762099986895919,
+          "result_count": 10,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "preference_4",
+      "category": "preference",
+      "query": "动画",
+      "user_id": 100,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        1,
+        2987,
+        2355
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1151.4936999883503,
+      "model_usage": {
+        "prompt_tokens": 2369,
+        "completion_tokens": 172,
+        "total_tokens": 2541
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.131100045517087,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 100,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.00200001522898674,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 1.683299953583628,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 100,
+            "candidate_ids": [
+              1,
+              2987,
+              2355,
+              3114,
+              588,
+              2700,
+              364,
+              595,
+              3751,
+              2081,
+              1148,
+              1282,
+              2080,
+              594,
+              745,
+              2761,
+              610,
+              2078,
+              2294,
+              2087
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.0371999922208488,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "preference_5",
+      "category": "preference",
+      "query": "剧情",
+      "user_id": 500,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1196,
+        2028
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1069.4417000049725,
+      "model_usage": {
+        "prompt_tokens": 2344,
+        "completion_tokens": 154,
+        "total_tokens": 2498
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 19.21479997690767,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 500,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002200016751885414,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 7.492200005799532,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 500,
+            "candidate_ids": [
+              2858,
+              1196,
+              2028,
+              593,
+              608,
+              110,
+              527,
+              1097,
+              858,
+              318,
+              296,
+              1259,
+              34,
+              1193,
+              1221,
+              924,
+              919,
+              1213,
+              912,
+              2000
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.09490002412348986,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "exclusion_1",
+      "category": "exclusion",
+      "query": "想看科幻，不要恐怖",
+      "user_id": 1,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        260,
+        1196,
+        1210
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1250.0221999944188,
+      "model_usage": {
+        "prompt_tokens": 2487,
+        "completion_tokens": 182,
+        "total_tokens": 2669
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [
+              "Horror"
+            ],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.577600011136383,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 1,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002400018274784088,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [
+              "Horror"
+            ],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 3.0558000435121357,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 1,
+            "candidate_ids": [
+              260,
+              1196,
+              1210,
+              589,
+              480,
+              1270,
+              2571,
+              1580,
+              1097,
+              2628,
+              1240,
+              2916,
+              1200,
+              541,
+              780,
+              1127,
+              3175,
+              924,
+              32,
+              1374
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.036100042052567005,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "exclusion_2",
+      "category": "exclusion",
+      "query": "想看喜剧，不要剧情",
+      "user_id": 2,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        1270,
+        1580,
+        2396
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1248.3197000110522,
+      "model_usage": {
+        "prompt_tokens": 2345,
+        "completion_tokens": 179,
+        "total_tokens": 2524
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [
+              "Drama"
+            ],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 5.531100032385439,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 2,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.00200001522898674,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [
+              "Drama"
+            ],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 5.326300044544041,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 2,
+            "candidate_ids": [
+              1270,
+              1580,
+              2396,
+              1197,
+              2997,
+              1265,
+              2716,
+              356,
+              1,
+              3175,
+              2355,
+              2791,
+              1136,
+              2599,
+              3114,
+              1307,
+              2174,
+              2797,
+              1304,
+              1394
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.03779999678954482,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "exclusion_3",
+      "category": "exclusion",
+      "query": "想看动作，不要恐怖",
+      "user_id": 6040,
+      "mode": "llm",
+      "status": "ok",
+      "item_ids": [
+        1197,
+        2000,
+        2406
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": false,
+      "fallback_cause": null,
+      "tool_calls": 2,
+      "latency_ms": 2565.634800004773,
+      "model_usage": {
+        "prompt_tokens": 4187,
+        "completion_tokens": 201,
+        "total_tokens": 4388
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "genres": [
+              "Action"
+            ],
+            "exclude_genres": [
+              "Horror"
+            ],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 1053.366800013464,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "candidate_ids": [
+              110,
+              1197,
+              2571,
+              1580,
+              457,
+              2916,
+              1221,
+              480,
+              2000,
+              2406
+            ],
+            "top_k": 10
+          },
+          "status": "ok",
+          "duration_ms": 5.536399956326932,
+          "result_count": 10,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "exclusion_4",
+      "category": "exclusion",
+      "query": "想看动画，不要冒险",
+      "user_id": 100,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        1,
+        2355,
+        3114
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1221.2511000107042,
+      "model_usage": {
+        "prompt_tokens": 2386,
+        "completion_tokens": 174,
+        "total_tokens": 2560
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [
+              "Adventure"
+            ],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.2007999941706657,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 100,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002200016751885414,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [
+              "Adventure"
+            ],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 1.7243000329472125,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 100,
+            "candidate_ids": [
+              1,
+              2355,
+              3114,
+              588,
+              2700,
+              364,
+              595,
+              3751,
+              2081,
+              1148,
+              1282,
+              2080,
+              594,
+              745,
+              2761,
+              2078,
+              2294,
+              2087,
+              2018,
+              2394
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.035100034438073635,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "exclusion_5",
+      "category": "exclusion",
+      "query": "想看爱情，不要喜剧",
+      "user_id": 500,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        1210,
+        912,
+        377
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1111.5879999706522,
+      "model_usage": {
+        "prompt_tokens": 2368,
+        "completion_tokens": 161,
+        "total_tokens": 2529
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Romance"
+            ],
+            "exclude_genres": [
+              "Comedy"
+            ],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.7126999921165407,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 500,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002400018274784088,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Romance"
+            ],
+            "exclude_genres": [
+              "Comedy"
+            ],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 2.386600011959672,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 500,
+            "candidate_ids": [
+              1210,
+              912,
+              377,
+              1721,
+              2291,
+              1393,
+              1094,
+              1247,
+              920,
+              736,
+              3081,
+              969,
+              1674,
+              2692,
+              25,
+              1101,
+              1183,
+              1408,
+              2006,
+              293
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.0391000066883862,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "history_1",
+      "category": "history",
+      "query": "结合历史推荐科幻",
+      "user_id": 1,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        260,
+        1196,
+        1210
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1120.5926000257023,
+      "model_usage": {
+        "prompt_tokens": 2456,
+        "completion_tokens": 160,
+        "total_tokens": 2616
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.7996000135317445,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 1,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002300017513334751,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 2.437800052575767,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 1,
+            "candidate_ids": [
+              260,
+              1196,
+              1210,
+              589,
+              480,
+              1270,
+              2571,
+              1580,
+              1097,
+              2628,
+              1240,
+              1214,
+              2916,
+              1200,
+              541,
+              780,
+              1127,
+              3175,
+              924,
+              32
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.03880000440403819,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "history_2",
+      "category": "history",
+      "query": "结合历史推荐喜剧",
+      "user_id": 2,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1270,
+        1580
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1125.245500006713,
+      "model_usage": {
+        "prompt_tokens": 2307,
+        "completion_tokens": 158,
+        "total_tokens": 2465
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 6.057599966879934,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 2,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002100015990436077,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 6.689200003165752,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 2,
+            "candidate_ids": [
+              2858,
+              1270,
+              1580,
+              2396,
+              1197,
+              2997,
+              1265,
+              2716,
+              356,
+              1,
+              1259,
+              34,
+              3175,
+              2355,
+              2791,
+              2000,
+              1136,
+              1968,
+              2599,
+              3114
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.04179996903985739,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "history_3",
+      "category": "history",
+      "query": "结合历史推荐动作",
+      "user_id": 6040,
+      "mode": "llm",
+      "status": "ok",
+      "item_ids": [
+        1197,
+        2000,
+        2406
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": false,
+      "fallback_cause": null,
+      "tool_calls": 2,
+      "latency_ms": 2443.5880000237375,
+      "model_usage": {
+        "prompt_tokens": 4118,
+        "completion_tokens": 200,
+        "total_tokens": 4318
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "genres": [
+              "Action"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 1059.6587000181898,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "candidate_ids": [
+              1197,
+              2571,
+              1580,
+              1387,
+              457,
+              480,
+              2000,
+              2406,
+              110,
+              2194
+            ],
+            "top_k": 10
+          },
+          "status": "ok",
+          "duration_ms": 5.466099944896996,
+          "result_count": 10,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "history_4",
+      "category": "history",
+      "query": "结合历史推荐动画",
+      "user_id": 100,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        1,
+        2987,
+        2355
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1187.5642000231892,
+      "model_usage": {
+        "prompt_tokens": 2378,
+        "completion_tokens": 172,
+        "total_tokens": 2550
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.210300008300692,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 100,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.00200001522898674,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 1.8637999892234802,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 100,
+            "candidate_ids": [
+              1,
+              2987,
+              2355,
+              3114,
+              588,
+              2700,
+              364,
+              595,
+              3751,
+              2081,
+              1148,
+              1282,
+              2080,
+              594,
+              745,
+              2761,
+              610,
+              2078,
+              2294,
+              2087
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.03549997927621007,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "history_5",
+      "category": "history",
+      "query": "结合历史推荐剧情",
+      "user_id": 500,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1196,
+        2028
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1129.200600029435,
+      "model_usage": {
+        "prompt_tokens": 2353,
+        "completion_tokens": 154,
+        "total_tokens": 2507
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 49.212099984288216,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 500,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002200016751885414,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 7.672599982470274,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 500,
+            "candidate_ids": [
+              2858,
+              1196,
+              2028,
+              593,
+              608,
+              110,
+              527,
+              1097,
+              858,
+              318,
+              296,
+              1259,
+              34,
+              1193,
+              1221,
+              924,
+              919,
+              1213,
+              912,
+              2000
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.042600033339113,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "cold_start_1",
+      "category": "cold_start",
+      "query": "科幻电影",
+      "user_id": null,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        260,
+        1196,
+        1210
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 3,
+      "latency_ms": 1077.7105999877676,
+      "model_usage": {
+        "prompt_tokens": 2450,
+        "completion_tokens": 160,
+        "total_tokens": 2610
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": null,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.428600040730089,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": null,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 2.2170000011101365,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": null,
+            "candidate_ids": [
+              260,
+              1196,
+              1210,
+              589,
+              480,
+              1270,
+              2571,
+              1580,
+              1097,
+              2628,
+              1240,
+              1214,
+              2916,
+              1200,
+              541,
+              780,
+              1127,
+              3175,
+              924,
+              32
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.03489997470751405,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "cold_start_2",
+      "category": "cold_start",
+      "query": "喜剧电影",
+      "user_id": 999999,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1270,
+        1580
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1066.994299995713,
+      "model_usage": {
+        "prompt_tokens": 2301,
+        "completion_tokens": 158,
+        "total_tokens": 2459
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 999999,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 6.68049999512732,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 999999,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002200016751885414,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 999999,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 5.886099999770522,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 999999,
+            "candidate_ids": [
+              2858,
+              1270,
+              1580,
+              2396,
+              1197,
+              2997,
+              1265,
+              2716,
+              356,
+              1,
+              1259,
+              34,
+              3175,
+              2355,
+              2791,
+              2000,
+              1136,
+              1968,
+              2599,
+              3114
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.04579999949783087,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "cold_start_3",
+      "category": "cold_start",
+      "query": "动作电影",
+      "user_id": null,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        260,
+        1196,
+        1210
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 3,
+      "latency_ms": 1173.6082999850623,
+      "model_usage": {
+        "prompt_tokens": 2410,
+        "completion_tokens": 176,
+        "total_tokens": 2586
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": null,
+            "genres": [
+              "Action"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 3.4882999607361853,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": null,
+            "genres": [
+              "Action"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 3.4013999975286424,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": null,
+            "candidate_ids": [
+              260,
+              1196,
+              1210,
+              589,
+              2028,
+              480,
+              2571,
+              1580,
+              1198,
+              110,
+              1197,
+              2628,
+              858,
+              1240,
+              1214,
+              2916,
+              457,
+              1200,
+              780,
+              1127
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.04360004095360637,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "cold_start_4",
+      "category": "cold_start",
+      "query": "动画电影",
+      "user_id": 999999,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        1,
+        2987,
+        2355
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 4,
+      "latency_ms": 1192.1755999792367,
+      "model_usage": {
+        "prompt_tokens": 2372,
+        "completion_tokens": 172,
+        "total_tokens": 2544
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 999999,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.2821000311523676,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 999999,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002100015990436077,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 999999,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 2.0452000317163765,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 999999,
+            "candidate_ids": [
+              1,
+              2987,
+              2355,
+              3114,
+              588,
+              2700,
+              364,
+              595,
+              3751,
+              2081,
+              1148,
+              1282,
+              2080,
+              594,
+              745,
+              2761,
+              610,
+              2078,
+              2294,
+              2087
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.03980001201853156,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "cold_start_5",
+      "category": "cold_start",
+      "query": "剧情电影",
+      "user_id": null,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1196,
+        2028
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_after_recall",
+      "tool_calls": 3,
+      "latency_ms": 1067.2977000358514,
+      "model_usage": {
+        "prompt_tokens": 2347,
+        "completion_tokens": 154,
+        "total_tokens": 2501
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": null,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 8.01250000949949,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": null,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 7.8779999748803675,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": null,
+            "candidate_ids": [
+              2858,
+              1196,
+              2028,
+              593,
+              608,
+              110,
+              527,
+              1097,
+              858,
+              318,
+              296,
+              1259,
+              34,
+              1193,
+              1221,
+              924,
+              919,
+              1213,
+              912,
+              2000
+            ],
+            "top_k": 3
+          },
+          "status": "ok",
+          "duration_ms": 0.04579999949783087,
+          "result_count": 3,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "no_match_1",
+      "category": "no_match",
+      "query": "科幻爱情动画",
+      "user_id": 1,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_before_recall",
+      "tool_calls": 2,
+      "latency_ms": 287.7686999854632,
+      "model_usage": {
+        "prompt_tokens": 268,
+        "completion_tokens": 41,
+        "total_tokens": 309
+      },
+      "tool_trace": [
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 1,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002800021320581436,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Animation",
+              "Romance",
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 0.8089999901130795,
+          "result_count": 0,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "no_match_2",
+      "category": "no_match",
+      "query": "恐怖动画爱情",
+      "user_id": 2,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_before_recall",
+      "tool_calls": 2,
+      "latency_ms": 287.0691000134684,
+      "model_usage": {
+        "prompt_tokens": 268,
+        "completion_tokens": 41,
+        "total_tokens": 309
+      },
+      "tool_trace": [
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 2,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.004200031980872154,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Animation",
+              "Horror",
+              "Romance"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 1.5724000404588878,
+          "result_count": 0,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "no_match_3",
+      "category": "no_match",
+      "query": "动作悬疑爱情动画",
+      "user_id": 6040,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_before_recall",
+      "tool_calls": 2,
+      "latency_ms": 289.3019000184722,
+      "model_usage": {
+        "prompt_tokens": 273,
+        "completion_tokens": 44,
+        "total_tokens": 317
+      },
+      "tool_trace": [
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 6040,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.006200047209858894,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "genres": [
+              "Action",
+              "Animation",
+              "Mystery",
+              "Romance"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 1.0070999851450324,
+          "result_count": 0,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "no_match_4",
+      "category": "no_match",
+      "query": "动画科幻爱情",
+      "user_id": 100,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_before_recall",
+      "tool_calls": 2,
+      "latency_ms": 297.11099999258295,
+      "model_usage": {
+        "prompt_tokens": 268,
+        "completion_tokens": 41,
+        "total_tokens": 309
+      },
+      "tool_trace": [
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 100,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002700020559132099,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation",
+              "Romance",
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 0.9057999704964459,
+          "result_count": 0,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "no_match_5",
+      "category": "no_match",
+      "query": "爱情恐怖动画",
+      "user_id": 500,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "model_protocol_before_recall",
+      "tool_calls": 2,
+      "latency_ms": 288.8445999706164,
+      "model_usage": {
+        "prompt_tokens": 268,
+        "completion_tokens": 40,
+        "total_tokens": 308
+      },
+      "tool_trace": [
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "ModelDecisionError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 500,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.002600019797682762,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Animation",
+              "Horror",
+              "Romance"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 0.8858000510372221,
+          "result_count": 0,
+          "error": null
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "tool_fault_1",
+      "category": "tool_fault",
+      "query": "故障演练：科幻",
+      "user_id": 1,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        260,
+        1196,
+        1210
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "injected_rank_failure",
+      "tool_calls": 3,
+      "latency_ms": 1088.0477000027895,
+      "model_usage": {
+        "prompt_tokens": 2456,
+        "completion_tokens": 160,
+        "total_tokens": 2616
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.7865999727509916,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "RuntimeError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 1,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.00400003045797348,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 1,
+            "genres": [
+              "Sci-Fi"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 2.312999975401908,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 1,
+            "candidate_ids": [
+              260,
+              1196,
+              1210,
+              589,
+              480,
+              1270,
+              2571,
+              1580,
+              1097,
+              2628,
+              1240,
+              1214,
+              2916,
+              1200,
+              541,
+              780,
+              1127,
+              3175,
+              924,
+              32
+            ],
+            "top_k": 3
+          },
+          "status": "error",
+          "duration_ms": 0.00589998671784997,
+          "result_count": 0,
+          "error": "injected rank failure"
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "tool_fault_2",
+      "category": "tool_fault",
+      "query": "故障演练：喜剧",
+      "user_id": 2,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1270,
+        1580
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "injected_rank_failure",
+      "tool_calls": 3,
+      "latency_ms": 1083.128200029023,
+      "model_usage": {
+        "prompt_tokens": 2307,
+        "completion_tokens": 158,
+        "total_tokens": 2465
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 6.923199980519712,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "RuntimeError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 2,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.003800028935074806,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 2,
+            "genres": [
+              "Comedy"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 6.804499949794263,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 2,
+            "candidate_ids": [
+              2858,
+              1270,
+              1580,
+              2396,
+              1197,
+              2997,
+              1265,
+              2716,
+              356,
+              1,
+              1259,
+              34,
+              3175,
+              2355,
+              2791,
+              2000,
+              1136,
+              1968,
+              2599,
+              3114
+            ],
+            "top_k": 3
+          },
+          "status": "error",
+          "duration_ms": 0.008300004992634058,
+          "result_count": 0,
+          "error": "injected rank failure"
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "tool_fault_3",
+      "category": "tool_fault",
+      "query": "故障演练：动作",
+      "user_id": 6040,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        480,
+        2571,
+        1580
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "injected_rank_failure",
+      "tool_calls": 3,
+      "latency_ms": 2215.986800030805,
+      "model_usage": {
+        "prompt_tokens": 2331,
+        "completion_tokens": 158,
+        "total_tokens": 2489
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "genres": [
+              "Action"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 1115.2888999786228,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "RuntimeError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 6040,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.008500006515532732,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "genres": [
+              "Action"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 9.877500007860363,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 6040,
+            "candidate_ids": [
+              1197,
+              2571,
+              1580,
+              480,
+              2000,
+              1387,
+              457,
+              2916,
+              110,
+              1221,
+              780,
+              1610,
+              1304,
+              377,
+              21,
+              2406,
+              2194,
+              2628,
+              2640,
+              3578
+            ],
+            "top_k": 3
+          },
+          "status": "error",
+          "duration_ms": 0.005700043402612209,
+          "result_count": 0,
+          "error": "injected rank failure"
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "tool_fault_4",
+      "category": "tool_fault",
+      "query": "故障演练：动画",
+      "user_id": 100,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        1,
+        2987,
+        2355
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "injected_rank_failure",
+      "tool_calls": 3,
+      "latency_ms": 1151.5845999820158,
+      "model_usage": {
+        "prompt_tokens": 2378,
+        "completion_tokens": 172,
+        "total_tokens": 2550
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 2.441899967379868,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "RuntimeError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 100,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.003200024366378784,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 100,
+            "genres": [
+              "Animation"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 1.8482999876141548,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 100,
+            "candidate_ids": [
+              1,
+              2987,
+              2355,
+              3114,
+              588,
+              2700,
+              364,
+              595,
+              3751,
+              2081,
+              1148,
+              1282,
+              2080,
+              594,
+              745,
+              2761,
+              610,
+              2078,
+              2294,
+              2087
+            ],
+            "top_k": 3
+          },
+          "status": "error",
+          "duration_ms": 0.004900037311017513,
+          "result_count": 0,
+          "error": "injected rank failure"
+        }
+      ],
+      "failure_reasons": []
+    },
+    {
+      "id": "tool_fault_5",
+      "category": "tool_fault",
+      "query": "故障演练：剧情",
+      "user_id": 500,
+      "mode": "llm",
+      "status": "fallback",
+      "item_ids": [
+        2858,
+        1196,
+        2028
+      ],
+      "constraint_pass": true,
+      "grounding_pass": true,
+      "preference_parse_pass": true,
+      "task_success": true,
+      "fallback_used": true,
+      "fallback_cause": "injected_rank_failure",
+      "tool_calls": 3,
+      "latency_ms": 1058.9751999941655,
+      "model_usage": {
+        "prompt_tokens": 2353,
+        "completion_tokens": 154,
+        "total_tokens": 2507
+      },
+      "tool_trace": [
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 8.514200046192855,
+          "result_count": 10,
+          "error": null
+        },
+        {
+          "name": "llm_validation",
+          "arguments": {},
+          "status": "error",
+          "duration_ms": 0.0,
+          "result_count": 0,
+          "error": "RuntimeError"
+        },
+        {
+          "name": "get_user_history",
+          "arguments": {
+            "user_id": 500,
+            "limit": 10
+          },
+          "status": "ok",
+          "duration_ms": 0.0034999684430658817,
+          "result_count": 0,
+          "error": null
+        },
+        {
+          "name": "recall_candidates",
+          "arguments": {
+            "user_id": 500,
+            "genres": [
+              "Drama"
+            ],
+            "exclude_genres": [],
+            "limit": 20
+          },
+          "status": "ok",
+          "duration_ms": 7.5462000095285475,
+          "result_count": 20,
+          "error": null
+        },
+        {
+          "name": "rank_candidates",
+          "arguments": {
+            "user_id": 500,
+            "candidate_ids": [
+              2858,
+              1196,
+              2028,
+              593,
+              608,
+              110,
+              527,
+              1097,
+              858,
+              318,
+              296,
+              1259,
+              34,
+              1193,
+              1221,
+              924,
+              919,
+              1213,
+              912,
+              2000
+            ],
+            "top_k": 3
+          },
+          "status": "error",
+          "duration_ms": 0.007199996616691351,
+          "result_count": 0,
+          "error": "injected rank failure"
+        }
+      ],
+      "failure_reasons": []
+    }
+  ]
+}

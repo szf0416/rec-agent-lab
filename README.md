@@ -60,7 +60,15 @@ python scripts/run_local_llm_agent.py --processed-dir data/processed/ml1m --user
 
 ItemCF 在此协议下覆盖更多电影，但准确率低于热度基线。协议与负样本修正见[基线报告](reports/baseline-sampled-ml1m.md)和[负样本审计](reports/eval-negative-collision-audit.md)。
 
-本机使用 Qwen2.5-1.5B GGUF + Ollama，对同一条 MovieLens 查询连续运行 4 次，均完成召回和排序且未回退；Agent 内部延迟约 2.5–2.8 秒。这是[冒烟验证](reports/local-llm-smoke-2026-10-29.md)，不能据此推断跨查询成功率或推荐质量提升。
+本机使用 Qwen2.5-1.5B GGUF + Ollama，对同一条 MovieLens 查询连续运行 4 次，均完成召回和排序且未回退；Agent 内部延迟约 2.5–2.8 秒。这是[冒烟验证](reports/local-llm-smoke-2026-10-29.md)。进一步在[30 条冻结对话任务](reports/dialogue-ml1m-2026-10-29.md)上评测，最终结果经回退后全部满足约束，但模型在 20 条普通任务中仅直接完成 3 条。项目公开这项局限，不把回退后的 100% 最终成功率当作模型能力。
+
+复现对话评测：
+
+```powershell
+python scripts/evaluate_dialogue_agent.py --mode deterministic --output reports/dialogue-deterministic-ml1m.json
+$env:RECAGENT_LLM_MODEL = "recagent-qwen2.5"  # 仅使用本地 GGUF 导入模型时设置
+python scripts/evaluate_dialogue_agent.py --mode llm --output reports/dialogue-llm-ml1m.json
+```
 
 ## 工程边界
 
@@ -74,9 +82,10 @@ ItemCF 在此协议下覆盖更多电影，但准确率低于热度基线。协�
 ## 文档与下一步
 
 - [本地模型安装与演示](docs/LOCAL-LLM.md)
+- [冻结对话任务与逐条评测](reports/dialogue-ml1m-2026-10-29.md)
 - [数据切分与防泄漏](docs/DATA-PIPELINE.md)
 - [项目架构](docs/ARCHITECTURE.md)
 - [当前可用于简历的事实与讲解提纲](docs/RESUME.md)
 - [四至六周 MVP 设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)与[长期学习路线](docs/ROADMAP.md)
 
-下一步是构建覆盖不同用户、偏好和失败场景的对话评测集，再加入 API 演示入口。跨查询成功率、推荐质量和端到端延迟有实测报告后再写入项目结论。
+下一步是针对模型工具协议的失败案例做对照实验，并加入 API 演示入口。推荐质量和端到端延迟需要独立协议与实测后再写入项目结论。

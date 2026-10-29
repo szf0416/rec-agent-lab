@@ -20,23 +20,24 @@
 
 **Files:** `configs/eval/dialogue_cases.json`, `recagent/eval/dialogue.py`, `tests/test_dialogue_eval.py`。
 
-- [ ] 写失败测试：验证任务数量至少 30、ID 唯一、分类和预期字段合法，并拒绝错误数据。
-- [ ] 运行目标测试确认失败；实现严格加载与任务结构。
-- [ ] 运行目标测试、Ruff、Mypy 并提交。
+- [x] 写失败测试：验证任务数量至少 30、ID 唯一、分类和预期字段合法，并拒绝错误数据。
+- [x] 运行目标测试确认失败；实现严格加载与任务结构。
+- [x] 运行目标测试、Ruff、Mypy 并提交。
 
 ### Task 2: 单条评分与汇总
 
 **Files:** `recagent/eval/dialogue.py`, `tests/test_dialogue_eval.py`。
 
-- [ ] 写失败测试：题材遗漏、已看电影、虚构元数据、无匹配、故障注入分别得到正确结果；P50/P95 和分组指标可复现。
-- [ ] 运行目标测试确认失败；实现逐条评分、失败分类、汇总与逐条 trace 输出。
-- [ ] 运行完整测试、Ruff、Mypy 并提交。
+- [x] 写失败测试：题材遗漏、已看电影、虚构元数据、无匹配、故障注入分别得到正确结果；P50/P95 和分组指标可复现。
+- [x] 运行目标测试确认失败；实现逐条评分、失败分类、汇总与逐条 trace 输出。
+- [x] 运行完整测试、Ruff、Mypy 并提交。
 
 ### Task 3: CLI 与真实模型报告
 
 **Files:** `scripts/evaluate_dialogue_agent.py`, `tests/test_dialogue_eval_cli.py`, `reports/dialogue-ml1m-2026-10-29.md`, `README.md`。
 
-- [ ] 写失败测试：确定性 CLI 在小目录上输出逐条结果和汇总；无服务时本地模式清楚标注回退。
-- [ ] 实现 CLI 的 `--mode deterministic|llm`、`--cases`、`--processed-dir`、`--output`；默认模型配置沿用现有环境变量。
-- [ ] 离线全套验证；用真实 MovieLens-1M 与本机模型各跑一轮，报告版本、成功率、回退、失败案例、延迟和适用边界。
-- [ ] 更新 README/简历事实，提交并合入 main。
+- [x] 写失败测试：确定性 CLI 在小目录上输出逐条结果和汇总；无服务时本地模式清楚标注回退。
+- [x] 实现 CLI 的 `--mode deterministic|llm`、`--cases`、`--processed-dir`、`--output`；默认模型配置沿用现有环境变量。
+- [x] 离线全套验证；用真实 MovieLens-1M 与本机模型各跑一轮，报告版本、成功率、回退、失败案例、延迟和适用边界。
+- [x] 更新 README/简历事实，提交并合入 main。
+

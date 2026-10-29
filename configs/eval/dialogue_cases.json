@@ -1,0 +1,413 @@
+[
+  {
+    "id": "preference_1",
+    "category": "preference",
+    "query": "科幻",
+    "user_id": 1,
+    "top_k": 3,
+    "expected_genres": [
+      "Sci-Fi"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "preference_2",
+    "category": "preference",
+    "query": "喜剧",
+    "user_id": 2,
+    "top_k": 3,
+    "expected_genres": [
+      "Comedy"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "preference_3",
+    "category": "preference",
+    "query": "动作",
+    "user_id": 6040,
+    "top_k": 3,
+    "expected_genres": [
+      "Action"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "preference_4",
+    "category": "preference",
+    "query": "动画",
+    "user_id": 100,
+    "top_k": 3,
+    "expected_genres": [
+      "Animation"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "preference_5",
+    "category": "preference",
+    "query": "剧情",
+    "user_id": 500,
+    "top_k": 3,
+    "expected_genres": [
+      "Drama"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "exclusion_1",
+    "category": "exclusion",
+    "query": "想看科幻，不要恐怖",
+    "user_id": 1,
+    "top_k": 3,
+    "expected_genres": [
+      "Sci-Fi"
+    ],
+    "excluded_genres": [
+      "Horror"
+    ],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "exclusion_2",
+    "category": "exclusion",
+    "query": "想看喜剧，不要剧情",
+    "user_id": 2,
+    "top_k": 3,
+    "expected_genres": [
+      "Comedy"
+    ],
+    "excluded_genres": [
+      "Drama"
+    ],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "exclusion_3",
+    "category": "exclusion",
+    "query": "想看动作，不要恐怖",
+    "user_id": 6040,
+    "top_k": 3,
+    "expected_genres": [
+      "Action"
+    ],
+    "excluded_genres": [
+      "Horror"
+    ],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "exclusion_4",
+    "category": "exclusion",
+    "query": "想看动画，不要冒险",
+    "user_id": 100,
+    "top_k": 3,
+    "expected_genres": [
+      "Animation"
+    ],
+    "excluded_genres": [
+      "Adventure"
+    ],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "exclusion_5",
+    "category": "exclusion",
+    "query": "想看爱情，不要喜剧",
+    "user_id": 500,
+    "top_k": 3,
+    "expected_genres": [
+      "Romance"
+    ],
+    "excluded_genres": [
+      "Comedy"
+    ],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "history_1",
+    "category": "history",
+    "query": "结合历史推荐科幻",
+    "user_id": 1,
+    "top_k": 3,
+    "expected_genres": [
+      "Sci-Fi"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "history_2",
+    "category": "history",
+    "query": "结合历史推荐喜剧",
+    "user_id": 2,
+    "top_k": 3,
+    "expected_genres": [
+      "Comedy"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "history_3",
+    "category": "history",
+    "query": "结合历史推荐动作",
+    "user_id": 6040,
+    "top_k": 3,
+    "expected_genres": [
+      "Action"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "history_4",
+    "category": "history",
+    "query": "结合历史推荐动画",
+    "user_id": 100,
+    "top_k": 3,
+    "expected_genres": [
+      "Animation"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "history_5",
+    "category": "history",
+    "query": "结合历史推荐剧情",
+    "user_id": 500,
+    "top_k": 3,
+    "expected_genres": [
+      "Drama"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "cold_start_1",
+    "category": "cold_start",
+    "query": "科幻电影",
+    "user_id": null,
+    "top_k": 3,
+    "expected_genres": [
+      "Sci-Fi"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "cold_start_2",
+    "category": "cold_start",
+    "query": "喜剧电影",
+    "user_id": 999999,
+    "top_k": 3,
+    "expected_genres": [
+      "Comedy"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "cold_start_3",
+    "category": "cold_start",
+    "query": "动作电影",
+    "user_id": null,
+    "top_k": 3,
+    "expected_genres": [
+      "Action"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "cold_start_4",
+    "category": "cold_start",
+    "query": "动画电影",
+    "user_id": 999999,
+    "top_k": 3,
+    "expected_genres": [
+      "Animation"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "cold_start_5",
+    "category": "cold_start",
+    "query": "剧情电影",
+    "user_id": null,
+    "top_k": 3,
+    "expected_genres": [
+      "Drama"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "no_match_1",
+    "category": "no_match",
+    "query": "科幻爱情动画",
+    "user_id": 1,
+    "top_k": 3,
+    "expected_genres": [
+      "Sci-Fi",
+      "Romance",
+      "Animation"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": true,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "no_match_2",
+    "category": "no_match",
+    "query": "恐怖动画爱情",
+    "user_id": 2,
+    "top_k": 3,
+    "expected_genres": [
+      "Horror",
+      "Animation",
+      "Romance"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": true,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "no_match_3",
+    "category": "no_match",
+    "query": "动作悬疑爱情动画",
+    "user_id": 6040,
+    "top_k": 3,
+    "expected_genres": [
+      "Action",
+      "Mystery",
+      "Romance",
+      "Animation"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": true,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "no_match_4",
+    "category": "no_match",
+    "query": "动画科幻爱情",
+    "user_id": 100,
+    "top_k": 3,
+    "expected_genres": [
+      "Animation",
+      "Sci-Fi",
+      "Romance"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": true,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "no_match_5",
+    "category": "no_match",
+    "query": "爱情恐怖动画",
+    "user_id": 500,
+    "top_k": 3,
+    "expected_genres": [
+      "Romance",
+      "Horror",
+      "Animation"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": true,
+    "inject_rank_failure": false
+  },
+  {
+    "id": "tool_fault_1",
+    "category": "tool_fault",
+    "query": "故障演练：科幻",
+    "user_id": 1,
+    "top_k": 3,
+    "expected_genres": [
+      "Sci-Fi"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": true
+  },
+  {
+    "id": "tool_fault_2",
+    "category": "tool_fault",
+    "query": "故障演练：喜剧",
+    "user_id": 2,
+    "top_k": 3,
+    "expected_genres": [
+      "Comedy"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": true
+  },
+  {
+    "id": "tool_fault_3",
+    "category": "tool_fault",
+    "query": "故障演练：动作",
+    "user_id": 6040,
+    "top_k": 3,
+    "expected_genres": [
+      "Action"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": true
+  },
+  {
+    "id": "tool_fault_4",
+    "category": "tool_fault",
+    "query": "故障演练：动画",
+    "user_id": 100,
+    "top_k": 3,
+    "expected_genres": [
+      "Animation"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": true
+  },
+  {
+    "id": "tool_fault_5",
+    "category": "tool_fault",
+    "query": "故障演练：剧情",
+    "user_id": 500,
+    "top_k": 3,
+    "expected_genres": [
+      "Drama"
+    ],
+    "excluded_genres": [],
+    "expect_no_match": false,
+    "inject_rank_failure": true
+  }
+]
