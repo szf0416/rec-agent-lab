@@ -187,6 +187,20 @@ def test_plain_json_tool_envelopes_follow_the_same_tool_checks(rec_tools):
     assert client.messages[1][-1]["role"] == "tool"
 
 
+def test_plain_json_tool_compatibility_can_be_disabled(rec_tools):
+    response = ChatTurn(
+        '{"name":"recall_candidates","arguments":{"genres":["Sci-Fi"],"limit":10}}',
+        (),
+        {},
+    )
+    result = LLMRecommendationAgent(
+        rec_tools, ScriptedClient([response, response]), accept_text_tool_calls=False
+    ).run("科幻", user_id=1)
+    assert result.fallback_used
+    assert result.tool_trace[0].name == "llm_validation"
+    assert not any(step.name == "recall_candidates" for step in result.tool_trace[:1])
+
+
 def test_plain_json_cannot_call_unoffered_tool(rec_tools):
     response = ChatTurn('{"name":"rank_candidates","arguments":{"candidate_ids":[2]}}', (), {})
     result = LLMRecommendationAgent(rec_tools, ScriptedClient([response, response])).run(

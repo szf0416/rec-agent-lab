@@ -116,6 +116,7 @@ class LLMRecommendationAgent:
         max_tool_calls: int = 4,
         max_turns: int = 6,
         total_timeout_s: float = 60,
+        accept_text_tool_calls: bool = True,
     ) -> None:
         if not 1 <= max_tool_calls <= 4 or not 1 <= max_turns <= 6 or total_timeout_s <= 0:
             raise ValueError("模型调用预算无效")
@@ -124,6 +125,7 @@ class LLMRecommendationAgent:
         self.max_tool_calls = max_tool_calls
         self.max_turns = max_turns
         self.total_timeout_s = total_timeout_s
+        self.accept_text_tool_calls = accept_text_tool_calls
 
     def _execute(
         self,
@@ -254,7 +256,8 @@ class LLMRecommendationAgent:
                 turn: ChatTurn = self.client.complete(messages, offered, remaining)
                 if perf_counter() - start > self.total_timeout_s:
                     raise ModelDecisionError("模型总时间预算耗尽")
-                turn = _normalize_text_tool_call(turn, offered)
+                if self.accept_text_tool_calls:
+                    turn = _normalize_text_tool_call(turn, offered)
                 for key, value in turn.usage.items():
                     if type(value) is int and value >= 0:
                         usage[key] = usage.get(key, 0) + value

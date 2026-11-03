@@ -24,6 +24,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--processed-dir", type=Path, default=Path("data/processed/ml1m"))
     parser.add_argument("--cases", type=Path, default=Path("configs/eval/dialogue_cases.json"))
     parser.add_argument("--mode", choices=("deterministic", "llm"), default="deterministic")
+    parser.add_argument("--text-tool-compat", choices=("on", "off"), default="on")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     cases = load_cases(args.cases)
@@ -48,7 +49,9 @@ def main(argv: list[str] | None = None) -> int:
 
             tools.rank_candidates = fail_rank  # type: ignore[method-assign,assignment]
         agent = (
-            LLMRecommendationAgent(tools, client)
+            LLMRecommendationAgent(
+                tools, client, accept_text_tool_calls=args.text_tool_compat == "on"
+            )
             if client is not None
             else DeterministicAgent(tools)
         )
@@ -59,6 +62,11 @@ def main(argv: list[str] | None = None) -> int:
         "case_set_sha256": hashlib.sha256(args.cases.read_bytes()).hexdigest(),
         "mode": args.mode,
         "model": model if client is not None else None,
+        "run_config": {
+            "text_tool_compat": args.text_tool_compat if client is not None else None,
+            "temperature": 0 if client is not None else None,
+            "max_tokens": 512 if client is not None else None,
+        },
         "summary": summarize(rows),
         "cases": rows,
     }

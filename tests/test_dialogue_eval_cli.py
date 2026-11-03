@@ -83,6 +83,8 @@ def test_cli_writes_case_results_and_summary(tmp_path, monkeypatch):
                 str(cases_path),
                 "--mode",
                 "llm",
+                "--text-tool-compat",
+                "off",
                 "--output",
                 str(llm_output),
             ]
@@ -92,3 +94,4 @@ def test_cli_writes_case_results_and_summary(tmp_path, monkeypatch):
     llm_result = json.loads(llm_output.read_text(encoding="utf-8"))
     assert llm_result["summary"]["total"] == 2
     assert llm_result["cases"][0]["fallback_cause"] == "model_unavailable"
+    assert llm_result["run_config"]["text_tool_compat"] == "off"
