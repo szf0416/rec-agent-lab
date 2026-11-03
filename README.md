@@ -106,9 +106,10 @@ python scripts/evaluate_dialogue_agent.py --mode llm --output reports/dialogue-l
 - [Ollama 默认 Qwen 的工具调用兼容验证](reports/ollama-default-compatibility-2026-10-29.md)
 - [本机 HTTP API 冒烟验证](reports/api-smoke-2026-10-29.md)
 - [冻结任务失败与回退贡献审计](reports/dialogue-failure-audit-2026-11-03.md)
+- [正文 JSON 工具调用兼容的 2×2 本机消融](reports/text-tool-compat-ablation-2026-11-03.md)
 - [数据切分与防泄漏](docs/DATA-PIPELINE.md)
 - [项目架构](docs/ARCHITECTURE.md)
 - [当前可用于简历的事实与讲解提纲](docs/RESUME.md)
 - [四至六周 MVP 设计](docs/superpowers/specs/2026-10-28-rec-agent-mvp-design.md)与[长期学习路线](docs/ROADMAP.md)
 
-下一步是在固定代码版本下做受控工具协议消融，并补轻量交互页面与端到端评测。推荐质量和端到端延迟需要独立协议与实测后再写入项目结论。
+已在固定代码版本下完成正文 JSON 工具调用兼容的 2×2 本机消融。下一步定位召回后的协议失败，再补轻量交互页面与端到端评测。推荐质量和端到端延迟需要独立协议与实测后再写入项目结论。
